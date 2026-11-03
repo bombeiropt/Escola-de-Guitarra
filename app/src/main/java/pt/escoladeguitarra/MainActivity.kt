@@ -63,7 +63,8 @@ class MainActivity : Activity() {
         "Solos e improvisação" to Lesson("Cria frases musicais", "A pentatónica menor é uma excelente base para construir solos de rock e blues. Aprende primeiro o desenho e depois transforma as notas em frases.", listOf("Em Lá menor, começa pela posição aberta/caixa 1: corda Mi grave, trastes 5 e 8.", "Segue o padrão: Mi grave 5–8; Lá 5–7; Ré 5–7; Sol 5–7; Si 5–8; Mi aguda 5–8.", "Desce o mesmo desenho até à corda grave, mantendo a alternância da palheta.", "Cria frases curtas de três a cinco notas e deixa pequenos silêncios.", "Experimenta terminar uma frase na tónica Lá e ouve a sensação de repouso."), "Com metrónomo a 60 BPM, toca a pentatónica de Lá menor a subir e a descer. Depois improvisa durante dois minutos usando apenas as notas dos trastes 5 e 8 da primeira e da sexta corda, variando o ritmo e incluindo pausas."),
         "Som e efeitos" to Lesson("Constrói o teu som", "Ajusta primeiro o volume e o ganho; adiciona efeitos gradualmente.", listOf("Começa com som limpo e equalização neutra.", "Aumenta o ganho aos poucos para controlar o ruído.", "Experimenta delay ou reverb com moderação."), "Toca a mesma frase com som limpo e depois com overdrive. Compara a clareza das notas."),
         "Treino e evolução" to Lesson("Treino com objetivo", "Uma sessão equilibrada alterna técnica, repertório e criatividade. A regularidade vale mais do que a velocidade.", listOf("Aquece durante cinco minutos com movimentos leves e palhetada lenta.", "Dedica dez minutos à técnica que estás a desenvolver.", "Estuda uma passagem de uma música em pequenos segmentos.", "Reserva cinco minutos para improvisar ou criar uma frase.", "Regista o andamento, as dificuldades e uma pequena vitória da sessão."), "Faz uma sessão de 20 minutos: 5 de aquecimento, 5 de técnica, 5 de repertório e 5 de improvisação. Regista o que correu melhor e escolhe um objetivo para a próxima sessão."),
-        "Afinador e metrónomo" to Lesson("Afinação e pulso", "Afinar e praticar com um pulso estável são hábitos essenciais.", listOf("Afinação standard: E–A–D–G–B–E, da corda mais grave à mais aguda.", "Toca uma corda de cada vez e deixa a nota estabilizar.", "No metrónomo, começa devagar e mantém o tempo constante."), "Afina cada corda com o afinador por microfone. Depois, regula o metrónomo para 60 BPM e toca uma nota em cada clique durante um minuto.")
+        "Afinador e metrónomo" to Lesson("Afinação e pulso", "Afinar e praticar com um pulso estável são hábitos essenciais.", listOf("Afinação standard: E–A–D–G–B–E, da corda mais grave à mais aguda.", "Toca uma corda de cada vez e deixa a nota estabilizar.", "No metrónomo, começa devagar e mantém o tempo constante."), "Afina cada corda com o afinador por microfone. Depois, regula o metrónomo para 60 BPM e toca uma nota em cada clique durante um minuto."),
+        "Teoria musical" to Lesson("Compreende o que estás a tocar", "A teoria musical ajuda-te a encontrar notas, construir acordes e criar progressões com intenção.", listOf("Na guitarra, cada traste corresponde a um semitom; dois semitons formam um tom.", "A escala maior segue a sequência: tom – tom – semitom – tom – tom – tom – semitom.", "Uma tríade maior é formada por tónica, terça maior e quinta justa; uma menor usa terça menor.", "Os intervalos dão identidade às melodias e aos acordes. Aprende a ouvi-los e a encontrá-los no braço.", "Relaciona a teoria com músicas e progressões que já conheces."), "Na corda Mi grave, encontra Sol no traste 3, Lá no 5 e Si no 7. Toca as notas e identifica os intervalos. Depois constrói Dó maior com Dó–Mi–Sol e Lá menor com Lá–Dó–Mi.")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -151,10 +152,29 @@ class MainActivity : Activity() {
         }, matchHeight(50))
         content.addView(exercise, margins(top = 18))
         if (section == "Afinador e metrónomo") { addTuner(content); addMetronome(content) }
+        if (section == "Teoria musical") addMusicTheory(content)
         if (section == "Acordes & dedilhados") addChordExamples(content)
         if (section == "Músicas para aprender") addSongPath(content)
         content.addView(label("O progresso fica guardado neste dispositivo.", muted, 12f), margins(top = 16))
         attach(content)
+    }
+
+    private fun addMusicTheory(content: LinearLayout) {
+        val theory = card(blue)
+        theory.addView(label("FUNDAMENTOS PARA O BRAÇO DA GUITARRA", bright, 13f, true))
+        theory.addView(label("1 · Tons e semitons", white, 17f, true), margins(top = 12, bottom = 4))
+        theory.addView(label("Um traste para o seguinte representa um semitom. Dois trastes representam um tom. Entre Mi–Fá e Si–Dó existe naturalmente apenas um semitom; entre as restantes notas naturais existe um tom.", muted, 13f))
+        theory.addView(label("2 · Fórmula da escala maior", white, 17f, true), margins(top = 12, bottom = 4))
+        theory.addView(label("Tom · Tom · Semitom · Tom · Tom · Tom · Semitom", bright, 15f, true))
+        theory.addView(label("Exemplo: Dó maior = Dó – Ré – Mi – Fá – Sol – Lá – Si – Dó. Não contém sustenidos nem bemóis.", muted, 13f))
+        theory.addView(label("3 · Como se constrói uma tríade", white, 17f, true), margins(top = 12, bottom = 4))
+        theory.addView(label("Maior: 1 – 3 – 5 (terça maior + terça menor).\nMenor: 1 – b3 – 5 (terça menor + terça maior).\nExemplos: Dó maior = Dó–Mi–Sol; Lá menor = Lá–Dó–Mi.", muted, 13f))
+        theory.addView(label("4 · Intervalos essenciais", white, 17f, true), margins(top = 12, bottom = 4))
+        theory.addView(label("Uníssono: 0 semitons · 2.ª menor: 1 · 2.ª maior: 2 · 3.ª menor: 3 · 3.ª maior: 4 · 4.ª justa: 5 · trítono: 6 · 5.ª justa: 7 · oitava: 12.", muted, 13f))
+        theory.addView(label("5 · Aplicação prática", white, 17f, true), margins(top = 12, bottom = 4))
+        theory.addView(label("Na corda Mi grave: traste 3 = Sol, traste 5 = Lá, traste 7 = Si. Usa estas referências para localizar notas e transportar riffs para outras tonalidades.", muted, 13f))
+        theory.addView(label("Desafio: toca Dó–Mi–Sol e depois Lá–Dó–Mi. Ouve a diferença entre o carácter maior e menor. Canta cada nota antes de a tocar.", bright, 13f, true), margins(top = 12))
+        content.addView(theory, margins(top = 18))
     }
 
     private fun addTuner(content: LinearLayout) {
