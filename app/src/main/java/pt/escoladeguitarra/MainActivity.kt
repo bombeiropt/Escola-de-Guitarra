@@ -64,7 +64,8 @@ class MainActivity : Activity() {
         "Som e efeitos" to Lesson("Constrói o teu som", "Ajusta primeiro o volume e o ganho; adiciona efeitos gradualmente.", listOf("Começa com som limpo e equalização neutra.", "Aumenta o ganho aos poucos para controlar o ruído.", "Experimenta delay ou reverb com moderação."), "Toca a mesma frase com som limpo e depois com overdrive. Compara a clareza das notas."),
         "Treino e evolução" to Lesson("Treino com objetivo", "Uma sessão equilibrada alterna técnica, repertório e criatividade. A regularidade vale mais do que a velocidade.", listOf("Aquece durante cinco minutos com movimentos leves e palhetada lenta.", "Dedica dez minutos à técnica que estás a desenvolver.", "Estuda uma passagem de uma música em pequenos segmentos.", "Reserva cinco minutos para improvisar ou criar uma frase.", "Regista o andamento, as dificuldades e uma pequena vitória da sessão."), "Faz uma sessão de 20 minutos: 5 de aquecimento, 5 de técnica, 5 de repertório e 5 de improvisação. Regista o que correu melhor e escolhe um objetivo para a próxima sessão."),
         "Afinador e metrónomo" to Lesson("Afinação e pulso", "Afinar e praticar com um pulso estável são hábitos essenciais.", listOf("Afinação standard: E–A–D–G–B–E, da corda mais grave à mais aguda.", "Toca uma corda de cada vez e deixa a nota estabilizar.", "No metrónomo, começa devagar e mantém o tempo constante."), "Afina cada corda com o afinador por microfone. Depois, regula o metrónomo para 60 BPM e toca uma nota em cada clique durante um minuto."),
-        "Teoria musical" to Lesson("Compreende o que estás a tocar", "A teoria musical ajuda-te a encontrar notas, construir acordes e criar progressões com intenção.", listOf("Na guitarra, cada traste corresponde a um semitom; dois semitons formam um tom.", "A escala maior segue a sequência: tom – tom – semitom – tom – tom – tom – semitom.", "Uma tríade maior é formada por tónica, terça maior e quinta justa; uma menor usa terça menor.", "Os intervalos dão identidade às melodias e aos acordes. Aprende a ouvi-los e a encontrá-los no braço.", "Relaciona a teoria com músicas e progressões que já conheces."), "Na corda Mi grave, encontra Sol no traste 3, Lá no 5 e Si no 7. Toca as notas e identifica os intervalos. Depois constrói Dó maior com Dó–Mi–Sol e Lá menor com Lá–Dó–Mi.")
+        "Teoria musical" to Lesson("Compreende o que estás a tocar", "A teoria musical ajuda-te a encontrar notas, construir acordes e criar progressões com intenção.", listOf("Na guitarra, cada traste corresponde a um semitom; dois semitons formam um tom.", "A escala maior segue a sequência: tom – tom – semitom – tom – tom – tom – semitom.", "Uma tríade maior é formada por tónica, terça maior e quinta justa; uma menor usa terça menor.", "Os intervalos dão identidade às melodias e aos acordes. Aprende a ouvi-los e a encontrá-los no braço.", "Relaciona a teoria com músicas e progressões que já conheces."), "Na corda Mi grave, encontra Sol no traste 3, Lá no 5 e Si no 7. Toca as notas e identifica os intervalos. Depois constrói Dó maior com Dó–Mi–Sol e Lá menor com Lá–Dó–Mi."),
+        "Treino de ouvido" to Lesson("Aprende a reconhecer intervalos", "O ouvido musical desenvolve-se com escuta atenta, comparação e repetição.", listOf("Escuta a primeira nota como ponto de referência.", "Compara a segunda nota com a primeira.", "Canta o intervalo e procura reproduzi-lo na guitarra.", "Repete em diferentes alturas sem olhar para o braço.", "Regista os intervalos que precisas de rever."), "Faz cinco perguntas no treino interativo. Antes de escolher, tenta cantar a distância entre as duas notas.")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -153,11 +154,77 @@ class MainActivity : Activity() {
         content.addView(exercise, margins(top = 18))
         if (section == "Afinador e metrónomo") { addTuner(content); addMetronome(content) }
         if (section == "Teoria musical") addMusicTheory(content)
+        if (section == "Treino de ouvido") addEarTraining(content)
         if (section == "Treino e evolução") addWeeklyPlan(content)
         if (section == "Acordes & dedilhados") addChordExamples(content)
         if (section == "Músicas para aprender") addSongPath(content)
         content.addView(label("O progresso fica guardado neste dispositivo.", muted, 12f), margins(top = 16))
         attach(content)
+    }
+
+    private fun addEarTraining(content: LinearLayout) {
+        val panelView = card(blue)
+        panelView.addView(label("DESAFIO DE INTERVALOS", bright, 13f, true))
+        panelView.addView(label("Ouve duas notas tocadas uma após a outra. Identifica a distância entre elas. Usa auscultadores ou um volume confortável.", muted, 13f), margins(top = 6, bottom = 10))
+        val intervals = listOf(Triple("2.ª menor", 1, "Um semitom."), Triple("2.ª maior", 2, "Dois semitons."), Triple("3.ª menor", 3, "Três semitons."), Triple("3.ª maior", 4, "Quatro semitons."), Triple("4.ª justa", 5, "Cinco semitons."), Triple("5.ª justa", 7, "Sete semitons."))
+        var current = intervals.random()
+        var answered = false
+        var score = 0
+        var total = 0
+        val scoreLabel = label("Acertos: 0 / 0", bright, 14f, true)
+        val prompt = label("Que intervalo ouviste?", white, 16f, true)
+        val feedback = label(" ", muted, 13f)
+        val answers = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        fun nextQuestion() {
+            current = intervals.random()
+            answered = false
+            prompt.text = "Que intervalo ouviste?"
+            feedback.text = " "
+            answers.removeAllViews()
+            intervals.shuffled().forEach { option ->
+                answers.addView(button(option.first) {
+                    if (!answered) {
+                        answered = true
+                        total++
+                        if (option.second == current.second) {
+                            score++
+                            feedback.text = "Correto! ${current.first}: ${current.third}"
+                            feedback.setTextColor(bright)
+                        } else {
+                            feedback.text = "Ainda não. Era ${current.first}: ${current.third}"
+                            feedback.setTextColor(Color.rgb(255, 190, 110))
+                        }
+                        scoreLabel.text = "Acertos: $score / $total"
+                    }
+                }, margins(bottom = 6))
+            }
+        }
+        panelView.addView(scoreLabel, margins(bottom = 8))
+        panelView.addView(prompt, margins(bottom = 8))
+        panelView.addView(button("▶  Ouvir intervalo") {
+            try {
+                val sampleRate = 44100
+                val toneSamples = (sampleRate * 0.38).toInt()
+                val silenceSamples = (sampleRate * 0.16).toInt()
+                val firstHz = 440.0
+                val secondHz = firstHz * Math.pow(2.0, current.second / 12.0)
+                val samples = ShortArray(toneSamples * 2 + silenceSamples)
+                for (i in 0 until toneSamples) {
+                    samples[i] = (kotlin.math.sin(2.0 * Math.PI * firstHz * i / sampleRate) * 12000).toInt().toShort()
+                    samples[toneSamples + silenceSamples + i] = (kotlin.math.sin(2.0 * Math.PI * secondHz * i / sampleRate) * 12000).toInt().toShort()
+                }
+                val track = android.media.AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, samples.size * 2, android.media.AudioTrack.MODE_STATIC)
+                track.write(samples, 0, samples.size)
+                track.play()
+                metronomeHandler.postDelayed({ try { track.stop(); track.release() } catch (_: Exception) {} }, 1100)
+            } catch (_: Exception) { Toast.makeText(this, "Não foi possível reproduzir o som.", Toast.LENGTH_SHORT).show() }
+        }, matchHeight(48))
+        panelView.addView(answers, margins(top = 10))
+        panelView.addView(feedback, margins(top = 4, bottom = 8))
+        panelView.addView(button("Próxima pergunta") { nextQuestion() }, matchHeight(48))
+        panelView.addView(label("Dica: a segunda nota é sempre mais aguda. Canta as duas notas e compara a distância.", muted, 12f), margins(top = 10))
+        content.addView(panelView, margins(top = 18))
+        nextQuestion()
     }
 
     private fun addWeeklyPlan(content: LinearLayout) {
