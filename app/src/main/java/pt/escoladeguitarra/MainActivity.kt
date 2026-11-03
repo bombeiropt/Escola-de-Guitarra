@@ -167,11 +167,20 @@ class MainActivity : Activity() {
         panelView.addView(label("DESAFIO DE INTERVALOS", bright, 13f, true))
         panelView.addView(label("Ouve duas notas tocadas uma após a outra. Identifica a distância entre elas. Usa auscultadores ou um volume confortável.", muted, 13f), margins(top = 6, bottom = 10))
         val intervals = listOf(Triple("2.ª menor", 1, "Um semitom."), Triple("2.ª maior", 2, "Dois semitons."), Triple("3.ª menor", 3, "Três semitons."), Triple("3.ª maior", 4, "Quatro semitons."), Triple("4.ª justa", 5, "Cinco semitons."), Triple("5.ª justa", 7, "Sete semitons."))
+        val prefs = getSharedPreferences("guitar_progress", MODE_PRIVATE)
         var current = intervals.random()
         var answered = false
         var score = 0
         var total = 0
-        val scoreLabel = label("Acertos: 0 / 0", bright, 14f, true)
+        val scoreLabel = label("Acertos nesta sessão: 0 / 0", bright, 14f, true)
+        val historyLabel = label("", muted, 12f)
+        fun updateHistory() {
+            val correct = prefs.getInt("ear_correct_total", 0)
+            val attempts = prefs.getInt("ear_answer_total", 0)
+            val percent = if (attempts == 0) 0 else (correct * 100 / attempts)
+            historyLabel.text = "Histórico guardado: $correct acertos em $attempts respostas ($percent%)."
+        }
+        updateHistory()
         val prompt = label("Que intervalo ouviste?", white, 16f, true)
         val feedback = label(" ", muted, 13f)
         val answers = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
@@ -186,7 +195,11 @@ class MainActivity : Activity() {
                     if (!answered) {
                         answered = true
                         total++
-                        if (option.second == current.second) {
+                        val correctAnswer = option.second == current.second
+                        val savedCorrect = prefs.getInt("ear_correct_total", 0) + if (correctAnswer) 1 else 0
+                        val savedAttempts = prefs.getInt("ear_answer_total", 0) + 1
+                        prefs.edit().putInt("ear_correct_total", savedCorrect).putInt("ear_answer_total", savedAttempts).apply()
+                        if (correctAnswer) {
                             score++
                             feedback.text = "Correto! ${current.first}: ${current.third}"
                             feedback.setTextColor(bright)
@@ -194,12 +207,14 @@ class MainActivity : Activity() {
                             feedback.text = "Ainda não. Era ${current.first}: ${current.third}"
                             feedback.setTextColor(Color.rgb(255, 190, 110))
                         }
-                        scoreLabel.text = "Acertos: $score / $total"
+                        scoreLabel.text = "Acertos nesta sessão: $score / $total"
+                        updateHistory()
                     }
                 }, margins(bottom = 6))
             }
         }
-        panelView.addView(scoreLabel, margins(bottom = 8))
+        panelView.addView(scoreLabel, margins(bottom = 4))
+        panelView.addView(historyLabel, margins(bottom = 10))
         panelView.addView(prompt, margins(bottom = 8))
         panelView.addView(button("▶  Ouvir intervalo") {
             try {
