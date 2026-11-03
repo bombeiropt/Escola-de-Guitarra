@@ -1,10 +1,15 @@
 package pt.escoladeguitarra
 
+import android.Manifest
 import android.app.Activity
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.media.AudioManager
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaRecorder
 import android.media.ToneGenerator
 import android.os.Handler
 import android.os.Looper
@@ -17,6 +22,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import kotlin.math.roundToInt
 
 class MainActivity : Activity() {
     private val bg = Color.rgb(4, 6, 12)
@@ -31,6 +37,9 @@ class MainActivity : Activity() {
     private var metronomeRunning = false
     private var metronomeBpm = 80
     private var metronomeBeat = 0
+    @Volatile private var tunerRunning = false
+    private var tunerRecord: AudioRecord? = null
+    private var tunerStatus: TextView? = null
     private val metronomeTick = object : Runnable {
         override fun run() {
             if (!metronomeRunning) return
@@ -133,10 +142,79 @@ class MainActivity : Activity() {
             showLesson(section)
         }, matchHeight(50))
         content.addView(exercise, margins(top = 18))
-        if (section == "Afinador e metrónomo") addMetronome(content)
+        if (section == "Afinador e metrónomo") { addTuner(content); addMetronome(content) }
         if (section == "Acordes & dedilhados") addChordExamples(content)
         content.addView(label("O progresso fica guardado neste dispositivo.", muted, 12f), margins(top = 16))
         attach(content)
+    }
+
+    private fun addTuner(content: LinearLayout) {
+        val tuner = card(blue)
+        tuner.addView(label("AFINADOR CROMÁTICO", bright, 13f, true))
+        tuner.addView(label("Afina uma corda de cada vez, num ambiente silencioso.", muted, 13f), margins(top = 5, bottom = 10))
+        tunerStatus = label("Pronto para ouvir a guitarra", white, 21f, true).apply { gravity = Gravity.CENTER }
+        tuner.addView(tunerStatus!!, margins(bottom = 8))
+        tuner.addView(button("▶  Iniciar / parar afinador") {
+            if (tunerRunning) stopTuner() else if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) startTuner() else requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 741)
+        }, matchHeight(48))
+        tuner.addView(label("Afinação standard: E – A – D – G – B – E. O indicador mostra a nota mais próxima e a diferença em cents.", muted, 12f), margins(top = 8))
+        content.addView(tuner, margins(top = 18))
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 741) { if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) startTuner() else tunerStatus?.text = "É necessária autorização do microfone" }
+    }
+
+    private fun startTuner() {
+        if (tunerRunning) return
+        try {
+            val rate = 44100
+            val size = maxOf(AudioRecord.getMinBufferSize(rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT), 8192)
+            val recorder = AudioRecord(MediaRecorder.AudioSource.MIC, rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, size)
+            if (recorder.state != AudioRecord.STATE_INITIALIZED) { recorder.release(); tunerStatus?.text = "Microfone indisponível"; return }
+            tunerRecord = recorder; tunerRunning = true; recorder.startRecording(); tunerStatus?.text = "A ouvir… toca uma corda"
+            Thread {
+                val samples = ShortArray(4096)
+                while (tunerRunning) {
+                    val count = try { recorder.read(samples, 0, samples.size) } catch (_: Exception) { -1 }
+                    if (count > 1024 && tunerRunning) {
+                        val hz = detectPitch(samples, count, rate)
+                        runOnUiThread {
+                            if (tunerRunning && hz > 0.0) {
+                                val names = arrayOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B")
+                                val midi = (69.0 + 12.0 * kotlin.math.ln(hz / 440.0) / kotlin.math.ln(2.0)).roundToInt()
+                                val target = 440.0 * Math.pow(2.0, (midi - 69) / 12.0)
+                                val cents = (1200.0 * kotlin.math.ln(hz / target) / kotlin.math.ln(2.0)).roundToInt()
+                                val dir = when { cents < -3 -> "grave"; cents > 3 -> "aguda"; else -> "afinada" }
+                                tunerStatus?.text = "${names[(midi % 12 + 12) % 12]}${midi / 12 - 1}  ${cents} cents · $dir"
+                            } else if (tunerRunning) tunerStatus?.text = "Toca uma corda isolada…"
+                        }
+                    }
+                }
+            }.apply { priority = Thread.MAX_PRIORITY; start() }
+        } catch (_: Exception) { tunerRunning = false; tunerStatus?.text = "Não foi possível iniciar o afinador" }
+    }
+
+    private fun detectPitch(data: ShortArray, count: Int, rate: Int): Double {
+        var mean = 0.0; for (i in 0 until count) mean += data[i]; mean /= count
+        var energy = 0.0; for (i in 0 until count) { val v = data[i] - mean; energy += v * v }
+        if (energy / count < 18000.0) return -1.0
+        var bestLag = -1; var best = 0.0
+        for (lag in rate / 1000..minOf(rate / 65, count / 2)) {
+            var corr = 0.0; var a2 = 0.0; var b2 = 0.0; var i = 0
+            while (i < count - lag) { val a = data[i].toDouble() - mean; val b = data[i + lag].toDouble() - mean; corr += a * b; a2 += a * a; b2 += b * b; i += 2 }
+            val score = if (a2 > 0 && b2 > 0) corr / kotlin.math.sqrt(a2 * b2) else 0.0
+            if (score > best) { best = score; bestLag = lag }
+        }
+        return if (bestLag > 0 && best > 0.72) rate.toDouble() / bestLag else -1.0
+    }
+
+    private fun stopTuner() {
+        tunerRunning = false
+        try { tunerRecord?.stop() } catch (_: Exception) {}
+        try { tunerRecord?.release() } catch (_: Exception) {}
+        tunerRecord = null; tunerStatus?.text = "Afinador parado"
     }
 
     private fun addMetronome(content: LinearLayout) {
@@ -210,11 +288,13 @@ class MainActivity : Activity() {
 
     override fun onPause() {
         stopMetronome()
+        stopTuner()
         super.onPause()
     }
 
     override fun onDestroy() {
         stopMetronome()
+        stopTuner()
         try { toneGenerator?.release() } catch (_: Exception) {}
         toneGenerator = null
         super.onDestroy()
