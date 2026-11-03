@@ -326,6 +326,24 @@ class MainActivity : Activity() {
         panelView.addView(label("E5  ·  POWER CHORD", white, 15f, true), margins(top = 4))
         panelView.addView(chordDiagram("E5", intArrayOf(0, 2, 2, -1, -1, -1), intArrayOf(0, 1, 2, 0, 0, 0)), margins(bottom = 8))
         panelView.addView(label("X significa corda abafada; 0 significa corda solta. Coloca os dedos perto do traste, sem tocar nas cordas vizinhas. Toca cada corda separadamente para confirmar que o acorde soa limpo.", muted, 12f), margins(top = 4))
+        panelView.addView(label("PROGRESSÕES PARA PRATICAR", bright, 13f, true), margins(top = 18, bottom = 8))
+        val progressions = listOf(
+            Triple("Rock · nível inicial", "Em  –  C  –  G  –  D", "Quatro batidas por acorde. Mantém o movimento da mão direita regular."),
+            Triple("Pop · nível intermédio", "G  –  D  –  Em  –  C", "Experimenta duas batidas para baixo e duas para cima em cada compasso."),
+            Triple("Blues · nível intermédio", "A7  –  D7  –  A7  –  E7", "Conta quatro tempos por acorde. Depois experimenta um ritmo shuffle lento.")
+        )
+        progressions.forEach { item ->
+            val block = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(11), dp(10), dp(11), dp(10))
+                background = roundDrawable(Color.rgb(7, 35, 62), 10)
+            }
+            block.addView(label(item.first.uppercase(), bright, 11f, true))
+            block.addView(label(item.second, white, 18f, true), margins(top = 3, bottom = 3))
+            block.addView(label(item.third, muted, 12f))
+            panelView.addView(block, margins(bottom = 8))
+        }
+        panelView.addView(label("Desafio: começa a 60 BPM. Quando conseguires mudar de acorde sem parar e sem cordas abafadas, aumenta 5 BPM.", muted, 12f), margins(top = 3))
         content.addView(panelView, margins(top = 18))
     }
 
