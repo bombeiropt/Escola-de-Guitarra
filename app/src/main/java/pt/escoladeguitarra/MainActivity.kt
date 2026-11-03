@@ -152,6 +152,7 @@ class MainActivity : Activity() {
         content.addView(exercise, margins(top = 18))
         if (section == "Afinador e metrónomo") { addTuner(content); addMetronome(content) }
         if (section == "Acordes & dedilhados") addChordExamples(content)
+        if (section == "Músicas para aprender") addSongPath(content)
         content.addView(label("O progresso fica guardado neste dispositivo.", muted, 12f), margins(top = 16))
         attach(content)
     }
@@ -262,6 +263,35 @@ class MainActivity : Activity() {
             showLesson("Afinador e metrónomo")
         }, matchHeight(50))
         panelView.addView(label("O primeiro tempo de cada compasso tem um clique diferente.", muted, 12f), margins(top = 8))
+        content.addView(panelView, margins(top = 18))
+    }
+
+    private fun addSongPath(content: LinearLayout) {
+        val panelView = card(blue)
+        panelView.addView(label("REPERTÓRIO SUGERIDO", bright, 13f, true))
+        panelView.addView(label("Uma seleção para desenvolver ritmo, riffs, mudanças de acordes e fraseado. A dificuldade é indicativa; adapta o andamento ao teu nível.", muted, 13f), margins(top = 6, bottom = 10))
+        val songs = listOf(
+            Triple("Seven Nation Army", "Inicial", "Riff principal, pulsação e precisão."),
+            Triple("Smoke on the Water", "Inicial", "Power chords e controlo da palheta."),
+            Triple("Knockin’ on Heaven’s Door", "Inicial", "Acompanhamento e mudanças de acordes."),
+            Triple("Sweet Home Alabama", "Intermédio", "Ritmo, pequenos preenchimentos e articulação."),
+            Triple("Another Brick in the Wall", "Intermédio", "Riff, dinâmica e precisão rítmica."),
+            Triple("Californication", "Intermédio", "Melodia, limpeza das notas e controlo do tempo."),
+            Triple("Hotel California", "Intermédio/Avançado", "Arpejos, construção de solo e fraseado."),
+            Triple("November Rain", "Avançado", "Bends, vibrato e expressão."),
+            Triple("Sweet Child O’ Mine", "Avançado", "Riff, resistência e palhetada consistente.")
+        )
+        songs.forEachIndexed { index, song ->
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(11), dp(9), dp(11), dp(9))
+                background = roundDrawable(Color.rgb(7, 35, 62), 10)
+            }
+            row.addView(label(song.first, white, 15f, true))
+            row.addView(label(song.second.uppercase() + "  ·  " + song.third, muted, 12f))
+            panelView.addView(row, margins(bottom = 7))
+        }
+        panelView.addView(label("Nota: a aplicação não reproduz nem distribui gravações ou tablaturas protegidas. Usa edições, aulas e fontes autorizadas para estudar cada música.", muted, 11f), margins(top = 5))
         content.addView(panelView, margins(top = 18))
     }
 
