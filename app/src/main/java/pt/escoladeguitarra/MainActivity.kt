@@ -132,6 +132,11 @@ class MainActivity : Activity() {
             row.addView(label(step, white, 15f), LinearLayout.LayoutParams(0, -2, 1f).apply { leftMargin = dp(12) })
             content.addView(row, margins(bottom = 9))
         }
+        if (section == "Solos e improvisação") {
+            content.addView(label("MAPA VISUAL · PENTATÓNICA DE LÁ MENOR", bright, 12f, true), margins(top = 16, bottom = 8))
+            content.addView(pentatonicDiagram(), margins(bottom = 8))
+            content.addView(label("Os círculos azuis assinalam as notas da escala. Os círculos dourados representam a nota Lá, ponto de repouso para as tuas frases.", muted, 12f), margins(bottom = 8))
+        }
         val exercise = card(blue)
         exercise.addView(label("EXERCÍCIO PRÁTICO", bright, 12f, true))
         exercise.addView(label(lesson.exercise, white, 15f), margins(top = 8, bottom = 12))
@@ -292,6 +297,54 @@ class MainActivity : Activity() {
         panelView.addView(chordDiagram("E5", intArrayOf(0, 2, 2, -1, -1, -1), intArrayOf(0, 1, 2, 0, 0, 0)), margins(bottom = 8))
         panelView.addView(label("X significa corda abafada; 0 significa corda solta. Coloca os dedos perto do traste, sem tocar nas cordas vizinhas. Toca cada corda separadamente para confirmar que o acorde soa limpo.", muted, 12f), margins(top = 4))
         content.addView(panelView, margins(top = 18))
+    }
+
+    private fun pentatonicDiagram(): View {
+        return object : View(this) {
+            private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; strokeWidth = dp(2).toFloat() }
+            private val rootPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 55); style = Paint.Style.FILL }
+            private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; style = Paint.Style.FILL }
+            private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(11).toFloat(); typeface = Typeface.DEFAULT_BOLD }
+            override fun onDraw(canvas: Canvas) {
+                super.onDraw(canvas)
+                val left = dp(38).toFloat()
+                val right = width - dp(16).toFloat()
+                val top = dp(42).toFloat()
+                val bottom = height - dp(22).toFloat()
+                val sx = (right - left) / 4f
+                val sy = (bottom - top) / 5f
+                val strings = arrayOf("E", "A", "D", "G", "B", "e")
+                for (i in 0..5) {
+                    val y = top + i * sy
+                    canvas.drawLine(left, y, right, y, gridPaint)
+                    canvas.drawText(strings[i], dp(12).toFloat(), y + dp(4).toFloat(), textPaint)
+                }
+                for (f in 0..4) {
+                    val x = left + f * sx
+                    canvas.drawLine(x, top, x, bottom, gridPaint)
+                    canvas.drawText((f + 5).toString(), x + sx / 2f - dp(4), top - dp(12).toFloat(), textPaint)
+                }
+                val positions = arrayOf(
+                    intArrayOf(0, 5), intArrayOf(0, 8),
+                    intArrayOf(1, 5), intArrayOf(1, 7),
+                    intArrayOf(2, 5), intArrayOf(2, 7),
+                    intArrayOf(3, 5), intArrayOf(3, 7),
+                    intArrayOf(4, 5), intArrayOf(4, 8),
+                    intArrayOf(5, 5), intArrayOf(5, 8)
+                )
+                for (p in positions) {
+                    val x = left + (p[1] - 5 + 0.5f) * sx
+                    val y = top + p[0] * sy
+                    val isRoot = (p[0] == 0 && p[1] == 5) || (p[0] == 2 && p[1] == 7) || (p[0] == 5 && p[1] == 5)
+                    canvas.drawCircle(x, y, dp(8).toFloat(), if (isRoot) rootPaint else notePaint)
+                }
+                canvas.drawText("Trastes 5–8 · corda grave em cima", left, height - dp(5).toFloat(), textPaint)
+            }
+        }.apply {
+            layoutParams = LinearLayout.LayoutParams(-1, dp(190))
+            background = roundDrawable(Color.rgb(7, 35, 62), 12)
+            contentDescription = "Mapa da pentatónica menor de Lá entre os trastes cinco e oito"
+        }
     }
 
     private fun chordDiagram(title: String, frets: IntArray, fingers: IntArray): View {
