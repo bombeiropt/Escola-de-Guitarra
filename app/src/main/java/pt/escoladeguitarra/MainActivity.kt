@@ -4,6 +4,11 @@ import android.app.Activity
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.media.AudioManager
+import android.media.ToneGenerator
+import android.os.Handler
+import android.os.Looper
+import android.widget.SeekBar
 import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
@@ -21,6 +26,21 @@ class MainActivity : Activity() {
     private val white = Color.WHITE
     private val muted = Color.rgb(190, 204, 222)
     private lateinit var root: LinearLayout
+    private val metronomeHandler = Handler(Looper.getMainLooper())
+    private var toneGenerator: ToneGenerator? = null
+    private var metronomeRunning = false
+    private var metronomeBpm = 80
+    private var metronomeBeat = 0
+    private val metronomeTick = object : Runnable {
+        override fun run() {
+            if (!metronomeRunning) return
+            try {
+                toneGenerator?.startTone(if (metronomeBeat == 0) ToneGenerator.TONE_PROP_ACK else ToneGenerator.TONE_PROP_BEEP, 70)
+            } catch (_: Exception) { }
+            metronomeBeat = (metronomeBeat + 1) % 4
+            metronomeHandler.postDelayed(this, (60000L / metronomeBpm))
+        }
+    }
 
     private data class Lesson(val title: String, val intro: String, val steps: List<String>, val exercise: String)
     private val lessons = linkedMapOf(
@@ -113,8 +133,91 @@ class MainActivity : Activity() {
             showLesson(section)
         }, matchHeight(50))
         content.addView(exercise, margins(top = 18))
+        if (section == "Afinador e metrónomo") addMetronome(content)
+        if (section == "Acordes & dedilhados") addChordExamples(content)
         content.addView(label("O progresso fica guardado neste dispositivo.", muted, 12f), margins(top = 16))
         attach(content)
+    }
+
+    private fun addMetronome(content: LinearLayout) {
+        val panelView = card(blue)
+        panelView.addView(label("METRÓNOMO INTERATIVO", bright, 13f, true))
+        val bpmLabel = label("$metronomeBpm BPM", white, 26f, true).apply { gravity = Gravity.CENTER }
+        panelView.addView(bpmLabel, margins(top = 8, bottom = 4))
+        panelView.addView(label("Ajusta o andamento entre 40 e 200 BPM.", muted, 13f))
+        val slider = SeekBar(this).apply {
+            max = 160
+            progress = metronomeBpm - 40
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    metronomeBpm = progress + 40
+                    bpmLabel.text = "$metronomeBpm BPM"
+                }
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+        }
+        panelView.addView(slider, margins(top = 6, bottom = 12))
+        panelView.addView(button(if (metronomeRunning) "Parar metrónomo" else "▶  Iniciar metrónomo") {
+            if (metronomeRunning) {
+                stopMetronome()
+            } else {
+                try {
+                    if (toneGenerator == null) toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 85)
+                    metronomeRunning = true
+                    metronomeBeat = 0
+                    metronomeHandler.removeCallbacks(metronomeTick)
+                    metronomeTick.run()
+                } catch (_: Exception) {
+                    Toast.makeText(this, "Não foi possível iniciar o som. Verifica o volume do dispositivo.", Toast.LENGTH_LONG).show()
+                    stopMetronome()
+                }
+            }
+            showLesson("Afinador e metrónomo")
+        }, matchHeight(50))
+        panelView.addView(label("O primeiro tempo de cada compasso tem um clique diferente.", muted, 12f), margins(top = 8))
+        content.addView(panelView, margins(top = 18))
+    }
+
+    private fun addChordExamples(content: LinearLayout) {
+        val panelView = card(blue)
+        panelView.addView(label("REFERÊNCIA RÁPIDA DE ACORDES", bright, 13f, true))
+        panelView.addView(label("Diagramas simplificados: E (Mi maior) e Em (Mi menor). As cordas estão da mais grave à esquerda para a mais aguda à direita.", muted, 13f), margins(top = 6, bottom = 12))
+        val diagrams = listOf(
+            "E  ·  Mi maior" to "E|--0--\nB|--0--\nG|--1--\nD|--2--\nA|--2--\nE|--0--",
+            "Em · Mi menor" to "E|--0--\nB|--0--\nG|--0--\nD|--2--\nA|--2--\nE|--0--"
+        )
+        diagrams.forEach { (name, diagram) ->
+            panelView.addView(label(name, white, 16f, true), margins(top = 6))
+            panelView.addView(TextView(this).apply {
+                text = diagram
+                textSize = 16f
+                typeface = Typeface.MONOSPACE
+                setTextColor(bright)
+                setPadding(dp(12), dp(8), dp(12), dp(8))
+                background = roundDrawable(Color.rgb(7, 35, 62), 10)
+            }, margins(top = 4, bottom = 6))
+        }
+        panelView.addView(label("0 = corda solta. Verifica cada corda individualmente para confirmar que todas soam limpas.", muted, 12f), margins(top = 4))
+        content.addView(panelView, margins(top = 18))
+    }
+
+    private fun stopMetronome() {
+        metronomeRunning = false
+        metronomeHandler.removeCallbacks(metronomeTick)
+        try { toneGenerator?.stopTone() } catch (_: Exception) {}
+    }
+
+    override fun onPause() {
+        stopMetronome()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        stopMetronome()
+        try { toneGenerator?.release() } catch (_: Exception) {}
+        toneGenerator = null
+        super.onDestroy()
     }
 
     private fun page() = LinearLayout(this).apply {
