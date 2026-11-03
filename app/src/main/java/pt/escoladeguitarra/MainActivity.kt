@@ -4,6 +4,9 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.view.View
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.media.AudioManager
@@ -259,25 +262,59 @@ class MainActivity : Activity() {
 
     private fun addChordExamples(content: LinearLayout) {
         val panelView = card(blue)
-        panelView.addView(label("REFERÊNCIA RÁPIDA DE ACORDES", bright, 13f, true))
-        panelView.addView(label("Diagramas simplificados: E (Mi maior) e Em (Mi menor). As cordas estão da mais grave à esquerda para a mais aguda à direita.", muted, 13f), margins(top = 6, bottom = 12))
-        val diagrams = listOf(
-            "E  ·  Mi maior" to "E|--0--\nB|--0--\nG|--1--\nD|--2--\nA|--2--\nE|--0--",
-            "Em · Mi menor" to "E|--0--\nB|--0--\nG|--0--\nD|--2--\nA|--2--\nE|--0--"
-        )
-        diagrams.forEach { (name, diagram) ->
-            panelView.addView(label(name, white, 16f, true), margins(top = 6))
-            panelView.addView(TextView(this).apply {
-                text = diagram
-                textSize = 16f
-                typeface = Typeface.MONOSPACE
-                setTextColor(bright)
-                setPadding(dp(12), dp(8), dp(12), dp(8))
-                background = roundDrawable(Color.rgb(7, 35, 62), 10)
-            }, margins(top = 4, bottom = 6))
-        }
-        panelView.addView(label("0 = corda solta. Verifica cada corda individualmente para confirmar que todas soam limpas.", muted, 12f), margins(top = 4))
+        panelView.addView(label("ACORDES EM DIAGRAMA", bright, 13f, true))
+        panelView.addView(label("Cada diagrama mostra as seis cordas. Os círculos indicam onde colocar os dedos; 0 significa corda solta.", muted, 13f), margins(top = 6, bottom = 10))
+        panelView.addView(chordDiagram("E  ·  MI MAIOR", intArrayOf(0, 2, 2, 1, 0, 0), intArrayOf(0, 2, 3, 1, 0, 0)), margins(bottom = 12))
+        panelView.addView(chordDiagram("Em  ·  MI MENOR", intArrayOf(0, 2, 2, 0, 0, 0), intArrayOf(0, 2, 3, 0, 0, 0)), margins(bottom = 8))
+        panelView.addView(label("Dica: coloca os dedos perto do traste, sem tocar nas cordas vizinhas. Toca cada corda separadamente para confirmar que o acorde soa limpo.", muted, 12f), margins(top = 4))
         content.addView(panelView, margins(top = 18))
+    }
+
+    private fun chordDiagram(title: String, frets: IntArray, fingers: IntArray): View {
+        return object : View(this) {
+            private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; strokeWidth = dp(1.5).toFloat(); style = Paint.Style.STROKE }
+            private val nutPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; strokeWidth = dp(4).toFloat() }
+            private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(13).toFloat(); typeface = Typeface.DEFAULT_BOLD }
+            private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; style = Paint.Style.FILL }
+            private val noteText = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textSize = dp(11).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
+            override fun onDraw(canvas: Canvas) {
+                super.onDraw(canvas)
+                val w = width.toFloat()
+                val left = w * 0.19f
+                val right = w * 0.91f
+                val top = dp(57).toFloat()
+                val bottom = dp(205).toFloat()
+                val stepX = (right - left) / 5f
+                val stepY = (bottom - top) / 4f
+                canvas.drawText(title, left, dp(23).toFloat(), textPaint)
+                val strings = arrayOf("E", "A", "D", "G", "B", "e")
+                for (i in 0..5) {
+                    val x = left + i * stepX
+                    canvas.drawLine(x, top, x, bottom, linePaint)
+                    canvas.drawText(strings[i], x - dp(4), top - dp(12).toFloat(), textPaint)
+                }
+                for (i in 0..4) {
+                    val y = top + i * stepY
+                    canvas.drawLine(left, y, right, y, if (i == 0) nutPaint else linePaint)
+                }
+                for (i in 0..5) {
+                    val x = left + i * stepX
+                    if (frets[i] == 0) {
+                        canvas.drawCircle(x, top - dp(25).toFloat(), dp(6).toFloat(), linePaint)
+                        canvas.drawText("0", x, top - dp(36).toFloat(), textPaint)
+                    } else {
+                        val y = top + (frets[i] - 0.5f) * stepY
+                        canvas.drawCircle(x, y, dp(10).toFloat(), notePaint)
+                        if (fingers[i] > 0) canvas.drawText(fingers[i].toString(), x, y + dp(4).toFloat(), noteText)
+                    }
+                }
+                canvas.drawText("Trastes", dp(8).toFloat(), bottom + dp(19).toFloat(), textPaint)
+            }
+        }.apply {
+            layoutParams = LinearLayout.LayoutParams(-1, dp(235))
+            setBackgroundColor(Color.rgb(7, 35, 62))
+            contentDescription = "Diagrama do acorde $title"
+        }
     }
 
     private fun stopMetronome() {
