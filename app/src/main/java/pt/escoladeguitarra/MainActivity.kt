@@ -63,7 +63,7 @@ class MainActivity : Activity() {
         "Solos e improvisação" to Lesson("Cria frases musicais", "Uma boa improvisação combina ritmo, silêncio e intenção.", listOf("Começa com poucas notas da pentatónica menor.", "Repete uma frase curta e altera o final.", "Usa pausas para dar espaço à música."), "Improvisa usando apenas três notas durante dois minutos. Varia o ritmo e termina cada frase com uma pausa."),
         "Som e efeitos" to Lesson("Constrói o teu som", "Ajusta primeiro o volume e o ganho; adiciona efeitos gradualmente.", listOf("Começa com som limpo e equalização neutra.", "Aumenta o ganho aos poucos para controlar o ruído.", "Experimenta delay ou reverb com moderação."), "Toca a mesma frase com som limpo e depois com overdrive. Compara a clareza das notas."),
         "Treino e evolução" to Lesson("Treino com objetivo", "Define uma meta pequena para cada sessão e regista o que melhorou.", listOf("Escolhe um único foco para a sessão.", "Usa um andamento em que consigas tocar sem erros.", "Termina repetindo o exercício com atenção ao som."), "Pratica cinco minutos e avalia a dificuldade de 1 a 5. Na próxima sessão, tenta melhorar um ponto."),
-        "Afinador e metrónomo" to Lesson("Afinação e pulso", "Afinar e praticar com um pulso estável são hábitos essenciais.", listOf("Afinação standard: E–A–D–G–B–E, da corda mais grave à mais aguda.", "Começa num andamento confortável.", "Toca uma nota por clique antes de experimentar duas."), "Usa um metrónomo a 60 BPM e toca uma nota em cada clique durante um minuto. O afinador por microfone será acrescentado numa fase seguinte.")
+        "Afinador e metrónomo" to Lesson("Afinação e pulso", "Afinar e praticar com um pulso estável são hábitos essenciais.", listOf("Afinação standard: E–A–D–G–B–E, da corda mais grave à mais aguda.", "Toca uma corda de cada vez e deixa a nota estabilizar.", "No metrónomo, começa devagar e mantém o tempo constante."), "Afina cada corda com o afinador por microfone. Depois, regula o metrónomo para 60 BPM e toca uma nota em cada clique durante um minuto.")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -264,9 +264,23 @@ class MainActivity : Activity() {
         val panelView = card(blue)
         panelView.addView(label("ACORDES EM DIAGRAMA", bright, 13f, true))
         panelView.addView(label("Cada diagrama mostra as seis cordas. Os círculos indicam onde colocar os dedos; 0 significa corda solta.", muted, 13f), margins(top = 6, bottom = 10))
-        panelView.addView(chordDiagram("E  ·  MI MAIOR", intArrayOf(0, 2, 2, 1, 0, 0), intArrayOf(0, 2, 3, 1, 0, 0)), margins(bottom = 12))
-        panelView.addView(chordDiagram("Em  ·  MI MENOR", intArrayOf(0, 2, 2, 0, 0, 0), intArrayOf(0, 2, 3, 0, 0, 0)), margins(bottom = 8))
-        panelView.addView(label("Dica: coloca os dedos perto do traste, sem tocar nas cordas vizinhas. Toca cada corda separadamente para confirmar que o acorde soa limpo.", muted, 12f), margins(top = 4))
+        panelView.addView(label("E  ·  MI MAIOR", white, 15f, true), margins(top = 8))
+        panelView.addView(chordDiagram("E", intArrayOf(0, 2, 2, 1, 0, 0), intArrayOf(0, 2, 3, 1, 0, 0)), margins(bottom = 12))
+        panelView.addView(label("Em  ·  MI MENOR", white, 15f, true), margins(top = 4))
+        panelView.addView(chordDiagram("Em", intArrayOf(0, 2, 2, 0, 0, 0), intArrayOf(0, 2, 3, 0, 0, 0)), margins(bottom = 12))
+        panelView.addView(label("A  ·  LÁ MAIOR", white, 15f, true), margins(top = 4))
+        panelView.addView(chordDiagram("A", intArrayOf(0, 0, 2, 2, 2, 0), intArrayOf(0, 0, 1, 2, 3, 0)), margins(bottom = 12))
+        panelView.addView(label("Am  ·  LÁ MENOR", white, 15f, true), margins(top = 4))
+        panelView.addView(chordDiagram("Am", intArrayOf(0, 0, 2, 2, 1, 0), intArrayOf(0, 0, 2, 3, 1, 0)), margins(bottom = 12))
+        panelView.addView(label("D  ·  RÉ MAIOR", white, 15f, true), margins(top = 4))
+        panelView.addView(chordDiagram("D", intArrayOf(-1, -1, 0, 2, 3, 2), intArrayOf(0, 0, 0, 1, 3, 2)), margins(bottom = 12))
+        panelView.addView(label("Dm  ·  RÉ MENOR", white, 15f, true), margins(top = 4))
+        panelView.addView(chordDiagram("Dm", intArrayOf(-1, -1, 0, 2, 3, 1), intArrayOf(0, 0, 0, 2, 3, 1)), margins(bottom = 12))
+        panelView.addView(label("G  ·  SOL MAIOR", white, 15f, true), margins(top = 4))
+        panelView.addView(chordDiagram("G", intArrayOf(3, 2, 0, 0, 0, 3), intArrayOf(2, 1, 0, 0, 0, 3)), margins(bottom = 12))
+        panelView.addView(label("C  ·  DÓ MAIOR", white, 15f, true), margins(top = 4))
+        panelView.addView(chordDiagram("C", intArrayOf(-1, 3, 2, 0, 1, 0), intArrayOf(0, 3, 2, 0, 1, 0)), margins(bottom = 8))
+        panelView.addView(label("X significa corda abafada; 0 significa corda solta. Coloca os dedos perto do traste, sem tocar nas cordas vizinhas. Toca cada corda separadamente para confirmar que o acorde soa limpo.", muted, 12f), margins(top = 4))
         content.addView(panelView, margins(top = 18))
     }
 
@@ -302,6 +316,10 @@ class MainActivity : Activity() {
                     if (frets[i] == 0) {
                         canvas.drawCircle(x, top - dp(25).toFloat(), dp(6).toFloat(), linePaint)
                         canvas.drawText("0", x, top - dp(36).toFloat(), textPaint)
+                    } else if (frets[i] < 0) {
+                        val crossY = top - dp(25).toFloat()
+                        canvas.drawLine(x - dp(5), crossY - dp(5), x + dp(5), crossY + dp(5), textPaint)
+                        canvas.drawLine(x - dp(5), crossY + dp(5), x + dp(5), crossY - dp(5), textPaint)
                     } else {
                         val y = top + (frets[i] - 0.5f) * stepY
                         canvas.drawCircle(x, y, dp(10).toFloat(), notePaint)
