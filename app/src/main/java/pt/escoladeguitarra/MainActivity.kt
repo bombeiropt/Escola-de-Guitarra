@@ -330,7 +330,7 @@ class MainActivity : Activity() {
         val progressions = listOf(
             Triple("Rock · nível inicial", "Em  –  C  –  G  –  D", "Quatro batidas por acorde. Mantém o movimento da mão direita regular."),
             Triple("Pop · nível intermédio", "G  –  D  –  Em  –  C", "Experimenta duas batidas para baixo e duas para cima em cada compasso."),
-            Triple("Blues · nível intermédio", "A7  –  D7  –  A7  –  E7", "Conta quatro tempos por acorde. Depois experimenta um ritmo shuffle lento.")
+            Triple("Blues · 12 compassos", "A7 × 4  ·  D7 × 2  ·  A7 × 2  ·  E7  ·  D7  ·  A7  ·  E7", "Conta quatro tempos por compasso: 4 em A7, 2 em D7, 2 em A7 e termina com um compasso em cada acorde E7, D7, A7 e E7. Experimenta um ritmo shuffle lento.")
         )
         progressions.forEach { item ->
             val block = LinearLayout(this).apply {
