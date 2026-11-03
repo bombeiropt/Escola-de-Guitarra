@@ -153,10 +153,40 @@ class MainActivity : Activity() {
         content.addView(exercise, margins(top = 18))
         if (section == "Afinador e metrónomo") { addTuner(content); addMetronome(content) }
         if (section == "Teoria musical") addMusicTheory(content)
+        if (section == "Treino e evolução") addWeeklyPlan(content)
         if (section == "Acordes & dedilhados") addChordExamples(content)
         if (section == "Músicas para aprender") addSongPath(content)
         content.addView(label("O progresso fica guardado neste dispositivo.", muted, 12f), margins(top = 16))
         attach(content)
+    }
+
+    private fun addWeeklyPlan(content: LinearLayout) {
+        val plan = card(blue)
+        plan.addView(label("PLANO SEMANAL DE PRÁTICA", bright, 13f, true))
+        plan.addView(label("Sessões curtas de 20 a 30 minutos. Se um dia não for possível praticar, retoma no seguinte sem tentar compensar tudo de uma vez.", muted, 13f), margins(top = 6, bottom = 10))
+        val days = listOf(
+            Triple("SEGUNDA · TÉCNICA", "Aquecimento 5 min · palhetada alternada 10 min · mudanças de corda 5 min.", "Objetivo: tocar lentamente, com volume uniforme e sem tensão."),
+            Triple("TERÇA · ACORDES", "Rever Em, G, C e D. Fazer mudanças durante 10 min e progressão Em–C–G–D durante 10 min.", "Objetivo: cada corda deve soar limpa antes de aumentar o andamento."),
+            Triple("QUARTA · ESCALAS", "Pentatónica menor de Lá: subir e descer o desenho durante 10 min; criar frases curtas durante 10 min.", "Objetivo: memorizar as notas e terminar algumas frases na tónica Lá."),
+            Triple("QUINTA · RITMO", "Metrónomo a 60 BPM. Tocar notas em semínimas, colcheias e pausas durante 15 a 20 min.", "Objetivo: manter o pulso estável sem acelerar nas passagens difíceis."),
+            Triple("SEXTA · REPERTÓRIO", "Escolher uma música adequada ao nível. Trabalhar uma passagem curta, em andamento lento, durante 20 min.", "Objetivo: tocar a passagem três vezes seguidas sem parar."),
+            Triple("SÁBADO · CRIATIVIDADE", "Improvisar sobre uma progressão simples durante 10 min; gravar uma ideia própria, se possível, e ouvi-la.", "Objetivo: criar frases curtas com pausas e variação rítmica."),
+            Triple("DOMINGO · REVISÃO", "Rever o que foi estudado, repetir os exercícios mais difíceis e registar o andamento confortável.", "Objetivo: identificar uma melhoria e escolher uma prioridade para a semana seguinte.")
+        )
+        days.forEach { day ->
+            val block = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(11), dp(10), dp(11), dp(10))
+                background = roundDrawable(Color.rgb(7, 35, 62), 10)
+            }
+            block.addView(label(day.first, bright, 12f, true))
+            block.addView(label(day.second, white, 13f), margins(top = 4, bottom = 4))
+            block.addView(label(day.third, muted, 12f))
+            plan.addView(block, margins(bottom = 8))
+        }
+        plan.addView(label("REGRA DE PROGRESSÃO", bright, 12f, true), margins(top = 6, bottom = 4))
+        plan.addView(label("Quando conseguires executar um exercício corretamente em três repetições consecutivas, aumenta apenas 3 a 5 BPM. Se perderes a limpeza ou sentires tensão, reduz o andamento. A qualidade vem antes da velocidade.", white, 13f))
+        content.addView(plan, margins(top = 18))
     }
 
     private fun addMusicTheory(content: LinearLayout) {
