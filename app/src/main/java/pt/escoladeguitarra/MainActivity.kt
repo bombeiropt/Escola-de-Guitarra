@@ -14,11 +14,12 @@ import android.widget.TextView
 import android.widget.Toast
 
 class MainActivity : Activity() {
-    private val backgroundColor = Color.rgb(17, 19, 23)
-    private val panelColor = Color.rgb(29, 32, 38)
-    private val accentColor = Color.rgb(235, 137, 48)
-    private val textColor = Color.rgb(245, 242, 236)
-    private val mutedColor = Color.rgb(174, 177, 183)
+    private val backgroundColor = Color.rgb(4, 6, 12)
+    private val panelColor = Color.rgb(12, 17, 29)
+    private val accentColor = Color.rgb(0, 153, 255)
+    private val brightBlue = Color.rgb(52, 190, 255)
+    private val textColor = Color.rgb(255, 255, 255)
+    private val mutedColor = Color.rgb(190, 204, 222)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,14 +33,17 @@ class MainActivity : Activity() {
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(22), dp(28), dp(22), dp(32))
-            setBackgroundColor(backgroundColor)
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(Color.rgb(5, 10, 22), backgroundColor, Color.BLACK)
+            )
         }
 
         content.addView(TextView(this).apply {
             text = "ESCOLA DE GUITARRA"
             textSize = 12f
-            letterSpacing = 0.18f
-            setTextColor(accentColor)
+            letterSpacing = 0.2f
+            setTextColor(brightBlue)
             typeface = Typeface.DEFAULT_BOLD
         })
         content.addView(TextView(this).apply {
@@ -47,6 +51,7 @@ class MainActivity : Activity() {
             textSize = 34f
             setTextColor(textColor)
             typeface = Typeface.create("sans-serif", Typeface.BOLD)
+            setShadowLayer(dp(12).toFloat(), 0f, 0f, Color.argb(150, 0, 153, 255))
             setPadding(0, dp(12), 0, dp(8))
         })
         content.addView(TextView(this).apply {
@@ -59,13 +64,13 @@ class MainActivity : Activity() {
         val featured = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(18), dp(18), dp(18), dp(18))
-            background = rounded(panelColor, 18)
+            background = panel(accentColor, 18)
         }
         featured.addView(TextView(this).apply {
             text = "PERCURSO DE APRENDIZAGEM"
             textSize = 11f
-            letterSpacing = 0.1f
-            setTextColor(accentColor)
+            letterSpacing = 0.12f
+            setTextColor(brightBlue)
             typeface = Typeface.DEFAULT_BOLD
         })
         featured.addView(TextView(this).apply {
@@ -101,7 +106,7 @@ class MainActivity : Activity() {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
                 setPadding(dp(15), dp(14), dp(12), dp(14))
-                background = rounded(panelColor, 14)
+                background = panel(Color.rgb(0, 92, 180), 14)
                 isClickable = true
                 isFocusable = true
                 setOnClickListener { openSection(item.first) }
@@ -110,9 +115,9 @@ class MainActivity : Activity() {
                 text = String.format("%02d", index + 1)
                 textSize = 13f
                 typeface = Typeface.DEFAULT_BOLD
-                setTextColor(accentColor)
+                setTextColor(brightBlue)
                 gravity = Gravity.CENTER
-                background = rounded(Color.rgb(57, 42, 31), 10)
+                background = rounded(Color.rgb(7, 35, 62), 10)
                 layoutParams = LinearLayout.LayoutParams(dp(42), dp(42))
             }
             row.addView(number)
@@ -136,7 +141,8 @@ class MainActivity : Activity() {
             row.addView(TextView(this).apply {
                 text = "›"
                 textSize = 28f
-                setTextColor(accentColor)
+                setTextColor(brightBlue)
+                setShadowLayer(dp(7).toFloat(), 0f, 0f, accentColor)
             })
             content.addView(row, marginParams(bottom = 9))
         }
@@ -161,21 +167,30 @@ class MainActivity : Activity() {
         textSize = 11f
         letterSpacing = 0.12f
         typeface = Typeface.DEFAULT_BOLD
-        setTextColor(mutedColor)
+        setTextColor(brightBlue)
     }
 
     private fun actionButton(label: String, action: () -> Unit) = Button(this).apply {
         text = label
         textSize = 15f
         isAllCaps = false
-        setTextColor(Color.BLACK)
+        setTextColor(Color.WHITE)
         typeface = Typeface.DEFAULT_BOLD
-        background = rounded(accentColor, 12)
+        background = GradientDrawable(
+            GradientDrawable.Orientation.LEFT_RIGHT,
+            intArrayOf(Color.rgb(0, 105, 220), brightBlue)
+        ).apply { cornerRadius = dp(12).toFloat() }
         setOnClickListener { action() }
     }
 
     private fun openSection(section: String) {
         Toast.makeText(this, "$section — conteúdo em preparação", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun panel(borderColor: Int, radius: Int) = GradientDrawable().apply {
+        setColor(panelColor)
+        cornerRadius = dp(radius).toFloat()
+        setStroke(dp(1), borderColor)
     }
 
     private fun rounded(color: Int, radius: Int) = GradientDrawable().apply {
