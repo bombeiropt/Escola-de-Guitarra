@@ -45,6 +45,7 @@ class MainActivity : Activity() {
     private var tunerRecord: AudioRecord? = null
     private var tunerThread: Thread? = null
     private var tunerStatus: AnalogTunerView? = null
+    @Volatile private var tunerTargetMidi: Int = 0 // 0 = cromático automático; 40–64 = cordas standard
     private val metronomeTick = object : Runnable {
         override fun run() {
             if (!metronomeRunning) return
@@ -289,6 +290,20 @@ class MainActivity : Activity() {
         tuner.addView(label("Afina uma corda de cada vez, num ambiente silencioso.", muted, 13f), margins(top = 5, bottom = 10))
         tunerStatus = AnalogTunerView()
         tuner.addView(tunerStatus!!, LinearLayout.LayoutParams(-1, dp(230)).apply { bottomMargin = dp(8) })
+        tuner.addView(label("ESCOLHER CORDA", bright, 11f, true), margins(top = 4, bottom = 6))
+        val stringRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        listOf(Triple("E", 40, "Mi grave"), Triple("A", 45, "Lá"), Triple("D", 50, "Ré"),
+            Triple("G", 55, "Sol"), Triple("B", 59, "Si"), Triple("e", 64, "Mi agudo")).forEach { item ->
+            stringRow.addView(button(item.first) {
+                tunerTargetMidi = item.second
+                tunerStatus?.setTarget(item.third)
+            }, LinearLayout.LayoutParams(0, dp(42), 1f).apply { marginEnd = dp(3) })
+        }
+        tuner.addView(stringRow, margins(bottom = 6))
+        tuner.addView(button("AUTO  ·  cromático") {
+            tunerTargetMidi = 0
+            tunerStatus?.setTarget("Detecção automática")
+        }, matchHeight(42).apply { bottomMargin = dp(8) })
         tuner.addView(button("▶  Iniciar / parar afinador") {
             if (tunerRunning) stopTuner() else if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) startTuner() else requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 741)
         }, matchHeight(48))
@@ -319,10 +334,15 @@ class MainActivity : Activity() {
                             if (tunerRunning && tunerRecord === recorder && hz > 0.0) {
                                 val names = arrayOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B")
                                 val midi = (69.0 + 12.0 * kotlin.math.ln(hz / 440.0) / kotlin.math.ln(2.0)).roundToInt()
-                                val target = 440.0 * Math.pow(2.0, (midi - 69) / 12.0)
-                                val cents = (1200.0 * kotlin.math.ln(hz / target) / kotlin.math.ln(2.0)).roundToInt()
-                                val dir = when { cents < -3 -> "grave"; cents > 3 -> "aguda"; else -> "afinada" }
-                                tunerStatus?.setReading("${names[(midi % 12 + 12) % 12]}${midi / 12 - 1}", cents)
+                                val selectedMidi = tunerTargetMidi
+                                val referenceMidi = if (selectedMidi in 40..64) selectedMidi else midi
+                                val referenceHz = 440.0 * Math.pow(2.0, (referenceMidi - 69) / 12.0)
+                                val cents = (1200.0 * kotlin.math.ln(hz / referenceHz) / kotlin.math.ln(2.0)).roundToInt()
+                                val shownNote = if (selectedMidi in 40..64) {
+                                    val stringNames = mapOf(40 to "E2 · Mi grave", 45 to "A2 · Lá", 50 to "D3 · Ré", 55 to "G3 · Sol", 59 to "B3 · Si", 64 to "E4 · Mi agudo")
+                                    stringNames[selectedMidi] ?: names[(midi % 12 + 12) % 12] + (midi / 12 - 1)
+                                } else names[(midi % 12 + 12) % 12] + (midi / 12 - 1)
+                                tunerStatus?.setReading(shownNote, cents)
                             } else if (tunerRunning && tunerRecord === recorder) tunerStatus?.setStatus("Toca uma corda isolada…")
                         }
                     }
@@ -346,8 +366,15 @@ class MainActivity : Activity() {
         private var note = "—"
         private var cents = 0
         private var status = "Pronto para ouvir a guitarra"
+        private var targetDescription = "Detecção automática"
         private var hasReading = false
 
+        fun setTarget(description: String) {
+            targetDescription = description
+            status = "Modo: $description"
+            hasReading = false
+            invalidate()
+        }
         fun setStatus(message: String) { status = message; hasReading = false; invalidate() }
         fun setReading(noteName: String, offset: Int) {
             note = noteName
@@ -402,14 +429,33 @@ class MainActivity : Activity() {
         var mean = 0.0; for (i in 0 until count) mean += data[i]; mean /= count
         var energy = 0.0; for (i in 0 until count) { val v = data[i] - mean; energy += v * v }
         if (energy / count < 18000.0) return -1.0
-        var bestLag = -1; var best = 0.0
-        for (lag in rate / 1000..minOf(rate / 65, count / 2)) {
+        // Autocorrelação normalizada: compara períodos sem depender apenas do volume.
+        // A pesquisa desce até 40 Hz para captar a corda Mi grave e exige confiança mínima.
+        var bestLag = -1
+        var best = 0.0
+        val scores = DoubleArray(minOf(rate / 40, count / 2) + 1)
+        val minLag = rate / 1000
+        val maxLag = minOf(rate / 40, count / 2)
+        for (lag in minLag..maxLag) {
             var corr = 0.0; var a2 = 0.0; var b2 = 0.0; var i = 0
-            while (i < count - lag) { val a = data[i].toDouble() - mean; val b = data[i + lag].toDouble() - mean; corr += a * b; a2 += a * a; b2 += b * b; i += 2 }
+            while (i < count - lag) {
+                val a = data[i].toDouble() - mean
+                val b = data[i + lag].toDouble() - mean
+                corr += a * b; a2 += a * a; b2 += b * b
+                i += 2
+            }
             val score = if (a2 > 0 && b2 > 0) corr / kotlin.math.sqrt(a2 * b2) else 0.0
+            scores[lag] = score
             if (score > best) { best = score; bestLag = lag }
         }
-        return if (bestLag > 0 && best > 0.72) rate.toDouble() / bestLag else -1.0
+        if (bestLag <= 0 || best < 0.78) return -1.0
+        // Interpolação parabólica entre amostras vizinhas para afinar a estimativa.
+        val before = if (bestLag > minLag) scores[bestLag - 1] else scores[bestLag]
+        val after = if (bestLag < maxLag) scores[bestLag + 1] else scores[bestLag]
+        val denominator = before - 2.0 * best + after
+        val correction = if (kotlin.math.abs(denominator) > 1e-9) 0.5 * (before - after) / denominator else 0.0
+        val refinedLag = bestLag + correction.coerceIn(-0.5, 0.5)
+        return rate.toDouble() / refinedLag
     }
 
     private fun stopTuner() {
