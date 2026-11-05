@@ -29,12 +29,12 @@ import android.widget.Toast
 import kotlin.math.roundToInt
 
 class MainActivity : Activity() {
-    private val bg = Color.rgb(4, 6, 12)
-    private val panel = Color.rgb(12, 17, 29)
-    private val blue = Color.rgb(0, 153, 255)
-    private val bright = Color.rgb(52, 190, 255)
+    private val bg = Color.rgb(13, 17, 23)
+    private val panel = Color.rgb(10, 20, 33)
+    private val blue = Color.rgb(0, 145, 235)
+    private val bright = Color.rgb(78, 195, 255)
     private val white = Color.WHITE
-    private val muted = Color.rgb(190, 204, 222)
+    private val muted = Color.rgb(196, 205, 216)
     private lateinit var root: LinearLayout
     private val metronomeHandler = Handler(Looper.getMainLooper())
     private var toneGenerator: ToneGenerator? = null
@@ -656,7 +656,7 @@ class MainActivity : Activity() {
             }
         }.apply {
             layoutParams = LinearLayout.LayoutParams(-1, dp(190))
-            background = roundDrawable(Color.rgb(7, 35, 62), 12)
+            background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(Color.rgb(42, 52, 57), Color.rgb(13, 25, 36))).apply { cornerRadius = dp(12).toFloat(); setStroke(dp(1), Color.rgb(181, 139, 75)) }
             contentDescription = "Diagrama da escala de Dó maior no braço da guitarra, trastes 3 a 8"
         }
     }
@@ -762,7 +762,7 @@ class MainActivity : Activity() {
             }
         }.apply {
             layoutParams = LinearLayout.LayoutParams(-1, dp(235))
-            setBackgroundColor(Color.rgb(7, 35, 62))
+            background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(Color.rgb(39, 48, 53), Color.rgb(9, 20, 31))).apply { cornerRadius = dp(12).toFloat(); setStroke(dp(1), Color.rgb(181, 139, 75)) }
             contentDescription = "Diagrama do acorde $title"
         }
     }
@@ -789,8 +789,12 @@ class MainActivity : Activity() {
 
     private fun page() = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
-        setPadding(dp(22), dp(24), dp(22), dp(30))
-        background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(Color.rgb(5, 10, 22), bg, Color.BLACK))
+        setPadding(dp(18), dp(20), dp(18), dp(30))
+        // Paleta de madeira escura, âmbar e azul profundo em toda a navegação.
+        background = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.rgb(67, 43, 29), Color.rgb(27, 30, 35), Color.rgb(9, 16, 27), Color.rgb(35, 25, 20))
+        )
     }
 
     private fun attach(content: LinearLayout) {
@@ -804,17 +808,35 @@ class MainActivity : Activity() {
     }
 
     private fun card(border: Int) = LinearLayout(this).apply {
-        orientation = LinearLayout.VERTICAL; setPadding(dp(15), dp(15), dp(15), dp(15)); background = boxDrawable(border, 16)
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(15), dp(15), dp(15), dp(15))
+        background = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.rgb(24, 43, 61), Color.rgb(8, 17, 29), Color.rgb(5, 12, 22))
+        ).apply {
+            cornerRadius = dp(17).toFloat()
+            setStroke(dp(1), if (border == blue || border == bright) Color.rgb(0, 145, 235) else Color.rgb(196, 151, 79))
+        }
+        elevation = dp(3).toFloat()
     }
 
     private fun button(title: String, action: () -> Unit) = Button(this).apply {
         text = title; textSize = 15f; isAllCaps = false; setTextColor(white); typeface = Typeface.DEFAULT_BOLD
-        background = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(Color.rgb(0, 105, 220), bright)).apply { cornerRadius = dp(12).toFloat() }
+        background = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
+            intArrayOf(Color.rgb(0, 77, 139), Color.rgb(0, 145, 220), Color.rgb(8, 76, 128))).apply {
+            cornerRadius = dp(12).toFloat()
+            setStroke(dp(1), Color.rgb(105, 194, 246))
+        }
+        elevation = dp(2).toFloat()
         setOnClickListener { action() }
     }
 
-    private fun boxDrawable(border: Int, radius: Int) = GradientDrawable().apply {
-        setColor(panel); cornerRadius = dp(radius).toFloat(); setStroke(dp(1), border)
+    private fun boxDrawable(border: Int, radius: Int) = GradientDrawable(
+        GradientDrawable.Orientation.TOP_BOTTOM,
+        intArrayOf(Color.rgb(25, 44, 61), panel, Color.rgb(5, 13, 24))
+    ).apply {
+        cornerRadius = dp(radius).toFloat()
+        setStroke(dp(1), border)
     }
     private fun roundDrawable(color: Int, radius: Int) = GradientDrawable().apply {
         setColor(color); cornerRadius = dp(radius).toFloat()
