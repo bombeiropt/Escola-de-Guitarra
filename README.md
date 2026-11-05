@@ -28,10 +28,9 @@ Escola-de-Guitarra/
 
 - Percurso de aprendizagem com aulas, passos e exercícios.
 - Repertório sugerido por nível, sem distribuir tablaturas ou gravações protegidas.
-- Diagramas de acordes e progressões de rock, pop e blues.
-- Técnica de guitarra, pentatónica menor de Lá e improvisação.
+- Diagramas de acordes e progressões de rock, pop e blues, com posições dos dedos.
+- Técnica de guitarra, pentatónica menor de Lá e improvisação, com mapas visuais do braço e nomes das notas.
 - Teoria musical aplicada ao braço da guitarra.
-- Treino auditivo interativo de intervalos, com pontuação e histórico persistente.
 - Afinador cromático por microfone, com indicação de nota e desvio em cents.
 - Metrónomo ajustável entre 40 e 200 BPM.
 - Plano semanal de estudo e registo local de exercícios concluídos.
@@ -49,8 +48,9 @@ Escola-de-Guitarra/
 
 ## Versão
 
-- Nome: 1.4.0
-- Código: 5
+- Nome: 1.4.1
+- Código: 6
+- Alteração recente: os diagramas da pentatónica identificam agora cada nota e destacam a tónica Lá.
 
 ## Limites de validação
 
