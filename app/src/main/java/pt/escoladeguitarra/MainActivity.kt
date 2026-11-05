@@ -42,7 +42,10 @@ class MainActivity : Activity() {
     private var metronomeBeat = 0
     @Volatile private var tunerRunning = false
     private var tunerRecord: AudioRecord? = null
+    private var tunerThread: Thread? = null
     private var tunerStatus: TextView? = null
+    private var earTrainingTrack: android.media.AudioTrack? = null
+    private var earTrainingRelease: Runnable? = null
     private val metronomeTick = object : Runnable {
         override fun run() {
             if (!metronomeRunning) return
@@ -78,6 +81,9 @@ class MainActivity : Activity() {
     }
 
     private fun showHome() {
+        stopEarTrainingAudio()
+        stopMetronome()
+        stopTuner()
         root.removeAllViews()
         val content = page()
         content.addView(label("ESCOLA DE GUITARRA", bright, 12f, true))
@@ -116,6 +122,11 @@ class MainActivity : Activity() {
 
     private fun showLesson(section: String) {
         val lesson = lessons[section] ?: return
+        stopEarTrainingAudio()
+        if (section != "Afinador e metrónomo") {
+            stopMetronome()
+            stopTuner()
+        }
         root.removeAllViews()
         val content = page()
         content.addView(button("‹  Voltar à escola") { showHome() }, matchHeight(46))
@@ -228,10 +239,22 @@ class MainActivity : Activity() {
                     samples[i] = (kotlin.math.sin(2.0 * Math.PI * firstHz * i / sampleRate) * 12000).toInt().toShort()
                     samples[toneSamples + silenceSamples + i] = (kotlin.math.sin(2.0 * Math.PI * secondHz * i / sampleRate) * 12000).toInt().toShort()
                 }
+                stopEarTrainingAudio()
                 val track = android.media.AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, samples.size * 2, android.media.AudioTrack.MODE_STATIC)
-                track.write(samples, 0, samples.size)
+                if (track.state != android.media.AudioTrack.STATE_INITIALIZED) {
+                    track.release()
+                    throw IllegalStateException("AudioTrack indisponível")
+                }
+                val written = track.write(samples, 0, samples.size)
+                if (written != samples.size) {
+                    track.release()
+                    throw IllegalStateException("Não foi possível preparar o áudio")
+                }
+                earTrainingTrack = track
                 track.play()
-                metronomeHandler.postDelayed({ try { track.stop(); track.release() } catch (_: Exception) {} }, 1100)
+                val release = Runnable { stopEarTrainingAudio() }
+                earTrainingRelease = release
+                metronomeHandler.postDelayed(release, 1100)
             } catch (_: Exception) { Toast.makeText(this, "Não foi possível reproduzir o som.", Toast.LENGTH_SHORT).show() }
         }, matchHeight(48))
         panelView.addView(answers, margins(top = 10))
@@ -578,6 +601,17 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun stopEarTrainingAudio() {
+        earTrainingRelease?.let { metronomeHandler.removeCallbacks(it) }
+        earTrainingRelease = null
+        val track = earTrainingTrack
+        earTrainingTrack = null
+        if (track != null) {
+            try { if (track.playState == android.media.AudioTrack.PLAYSTATE_PLAYING) track.stop() } catch (_: Exception) {}
+            try { track.release() } catch (_: Exception) {}
+        }
+    }
+
     private fun stopMetronome() {
         metronomeRunning = false
         metronomeHandler.removeCallbacks(metronomeTick)
@@ -585,12 +619,14 @@ class MainActivity : Activity() {
     }
 
     override fun onPause() {
+        stopEarTrainingAudio()
         stopMetronome()
         stopTuner()
         super.onPause()
     }
 
     override fun onDestroy() {
+        stopEarTrainingAudio()
         stopMetronome()
         stopTuner()
         try { toneGenerator?.release() } catch (_: Exception) {}
