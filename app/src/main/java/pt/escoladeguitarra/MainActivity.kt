@@ -493,6 +493,7 @@ class MainActivity : Activity() {
             private val rootPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 55); style = Paint.Style.FILL }
             private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; style = Paint.Style.FILL }
             private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(11).toFloat(); typeface = Typeface.DEFAULT_BOLD }
+            private val noteTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textSize = dp(9).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
             override fun onDraw(canvas: Canvas) {
                 super.onDraw(canvas)
                 val left = dp(38).toFloat()
@@ -520,11 +521,17 @@ class MainActivity : Activity() {
                     intArrayOf(4, 5), intArrayOf(4, 8),
                     intArrayOf(5, 5), intArrayOf(5, 8)
                 )
+                val noteNames = mapOf(
+                    "0:5" to "A", "0:8" to "C", "1:5" to "D", "1:7" to "E",
+                    "2:5" to "G", "2:7" to "A", "3:5" to "C", "3:7" to "D",
+                    "4:5" to "E", "4:8" to "G", "5:5" to "A", "5:8" to "C"
+                )
                 for (p in positions) {
                     val x = left + (p[1] - 5 + 0.5f) * sx
                     val y = top + p[0] * sy
                     val isRoot = (p[0] == 0 && p[1] == 5) || (p[0] == 2 && p[1] == 7) || (p[0] == 5 && p[1] == 5)
                     canvas.drawCircle(x, y, dp(8).toFloat(), if (isRoot) rootPaint else notePaint)
+                    canvas.drawText(noteNames["${p[0]}:${p[1]}"] ?: "", x, y + dp(3).toFloat(), noteTextPaint)
                 }
                 canvas.drawText("Trastes 5–8 · corda grave em cima", left, height - dp(5).toFloat(), textPaint)
             }
