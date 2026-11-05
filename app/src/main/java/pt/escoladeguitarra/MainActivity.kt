@@ -7,6 +7,8 @@ import android.graphics.Color
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
+import android.graphics.LinearGradient
+import android.graphics.Shader
 import android.view.View
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -613,7 +615,7 @@ class MainActivity : Activity() {
             }
             private val stringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = Color.rgb(220, 222, 218)
-                strokeWidth = dp(1.4).toFloat()
+                strokeWidth = dp(1).toFloat()
             }
             private val thinStringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = Color.rgb(150, 165, 174)
@@ -699,7 +701,7 @@ class MainActivity : Activity() {
                     val name = names["${p[0]}:${p[1]}"] ?: ""
                     val isRoot = name == "C"
                     canvas.drawCircle(x, y, dp(10).toFloat(), if (isRoot) rootPaint else notePaint)
-                    canvas.drawText(name, x, y + dp(3.5).toFloat(), markerText)
+                    canvas.drawText(name, x, y + dp(4).toFloat(), markerText)
                 }
                 canvas.drawText("TRASTES 3–8  ·  AFINAÇÃO STANDARD", left, height - dp(7).toFloat(), smallPaint)
             }
