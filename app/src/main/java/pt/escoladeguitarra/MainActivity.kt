@@ -338,25 +338,27 @@ class MainActivity : Activity() {
             val recorder = AudioRecord(MediaRecorder.AudioSource.MIC, rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, size)
             if (recorder.state != AudioRecord.STATE_INITIALIZED) { recorder.release(); tunerStatus?.text = "Microfone indisponível"; return }
             tunerRecord = recorder; tunerRunning = true; recorder.startRecording(); tunerStatus?.text = "A ouvir… toca uma corda"
-            Thread {
+            val worker = Thread {
                 val samples = ShortArray(4096)
-                while (tunerRunning) {
+                while (tunerRunning && tunerRecord === recorder) {
                     val count = try { recorder.read(samples, 0, samples.size) } catch (_: Exception) { -1 }
                     if (count > 1024 && tunerRunning) {
                         val hz = detectPitch(samples, count, rate)
                         runOnUiThread {
-                            if (tunerRunning && hz > 0.0) {
+                            if (tunerRunning && tunerRecord === recorder && hz > 0.0) {
                                 val names = arrayOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B")
                                 val midi = (69.0 + 12.0 * kotlin.math.ln(hz / 440.0) / kotlin.math.ln(2.0)).roundToInt()
                                 val target = 440.0 * Math.pow(2.0, (midi - 69) / 12.0)
                                 val cents = (1200.0 * kotlin.math.ln(hz / target) / kotlin.math.ln(2.0)).roundToInt()
                                 val dir = when { cents < -3 -> "grave"; cents > 3 -> "aguda"; else -> "afinada" }
                                 tunerStatus?.text = "${names[(midi % 12 + 12) % 12]}${midi / 12 - 1}  ${cents} cents · $dir"
-                            } else if (tunerRunning) tunerStatus?.text = "Toca uma corda isolada…"
+                            } else if (tunerRunning && tunerRecord === recorder) tunerStatus?.text = "Toca uma corda isolada…"
                         }
                     }
                 }
-            }.apply { priority = Thread.MAX_PRIORITY; start() }
+            }.apply { priority = Thread.MAX_PRIORITY }
+            tunerThread = worker
+            worker.start()
         } catch (_: Exception) { tunerRunning = false; tunerStatus?.text = "Não foi possível iniciar o afinador" }
     }
 
@@ -376,9 +378,12 @@ class MainActivity : Activity() {
 
     private fun stopTuner() {
         tunerRunning = false
-        try { tunerRecord?.stop() } catch (_: Exception) {}
-        try { tunerRecord?.release() } catch (_: Exception) {}
-        tunerRecord = null; tunerStatus?.text = "Afinador parado"
+        val recorder = tunerRecord
+        tunerRecord = null
+        try { if (recorder?.recordingState == AudioRecord.RECORDSTATE_RECORDING) recorder.stop() } catch (_: Exception) {}
+        try { recorder?.release() } catch (_: Exception) {}
+        tunerThread = null
+        tunerStatus?.text = "Afinador parado"
     }
 
     private fun addMetronome(content: LinearLayout) {
