@@ -61,7 +61,7 @@ class MainActivity : Activity() {
         "Músicas para aprender" to Lesson("Aprende por partes", "Divide cada música em pequenos segmentos e junta-os quando estiverem seguros.", listOf("Escolhe um riff adequado ao teu nível.", "Ouve a gravação para reconhecer o ritmo.", "Pratica dois compassos de cada vez, primeiro devagar."), "Escolhe um riff simples que conheças. Repete-o cinco vezes e regista onde sentiste dificuldade. Usa fontes autorizadas para tablaturas e gravações."),
         "Acordes & dedilhados" to Lesson("Acordes limpos e mudanças suaves", "Pressiona perto do traste, com apenas a força necessária.", listOf("Coloca um dedo de cada vez e verifica cada corda.", "Dedilha as cordas individualmente para encontrar notas abafadas.", "Muda entre dois acordes sem acelerar."), "Alterna entre Em e G: quatro batidas em cada acorde. Repete durante dois minutos, mantendo um pulso constante."),
         "Técnica de guitarra" to Lesson("Precisão antes da velocidade", "Movimentos pequenos e relaxados melhoram a consistência. Trabalha cada técnica isoladamente antes de a juntar a uma música.", listOf("Palhetada alternada: mantém o movimento contínuo para baixo e para cima, mesmo quando mudas de corda.", "Slides: toca uma nota e desliza o mesmo dedo até ao traste seguinte sem levantar a pressão.", "Bends: empurra a corda lateralmente para atingir a altura da nota pretendida; compara com a nota de referência.", "Vibrato: oscila ligeiramente a afinação com movimentos regulares e controlados do dedo.", "Mantém o pulso relaxado e interrompe o exercício se surgir dor."), "A 60 BPM, toca quatro notas por corda com palhetada alternada. Depois faz um slide de dois trastes e sustém uma nota com vibrato lento. Repete sem tensão e aumenta o andamento apenas quando estiver limpo."),
-        "Solos e improvisação" to Lesson("Cria frases musicais", "A pentatónica menor é uma excelente base para construir solos de rock e blues. Aprende primeiro o desenho e depois transforma as notas em frases.", listOf("Em Lá menor, começa pela posição aberta/caixa 1: corda Mi grave, trastes 5 e 8.", "Segue o padrão: Mi grave 5–8; Lá 5–7; Ré 5–7; Sol 5–7; Si 5–8; Mi aguda 5–8.", "Desce o mesmo desenho até à corda grave, mantendo a alternância da palheta.", "Cria frases curtas de três a cinco notas e deixa pequenos silêncios.", "Experimenta terminar uma frase na tónica Lá e ouve a sensação de repouso."), "Com metrónomo a 60 BPM, toca a pentatónica de Lá menor a subir e a descer. Depois improvisa durante dois minutos usando apenas as notas dos trastes 5 e 8 da primeira e da sexta corda, variando o ritmo e incluindo pausas."),
+        "Solos e improvisação" to Lesson("Cria frases musicais", "A pentatónica menor é uma excelente base para construir solos de rock e blues. Aprende primeiro o desenho e depois transforma as notas em frases.", listOf("Em Lá menor, começa na posição da pentatónica menor apresentada no diagrama.", "Percorre as posições assinaladas nas seis cordas, começando pela corda Mi grave.", "Sobe e desce o desenho sem acelerar; mantém a alternância da palheta.", "Cria frases curtas de três a cinco notas e deixa pequenos silêncios.", "Experimenta terminar uma frase na nota Lá, destacada a dourado no diagrama."), "Com metrónomo a 60 BPM, toca a pentatónica de Lá menor a subir e a descer. Depois improvisa durante dois minutos usando apenas as notas dos trastes 5 e 8 da primeira e da sexta corda, variando o ritmo e incluindo pausas."),
         "Som e efeitos" to Lesson("Constrói o teu som", "Ajusta primeiro o volume e o ganho; adiciona efeitos gradualmente.", listOf("Começa com som limpo e equalização neutra.", "Aumenta o ganho aos poucos para controlar o ruído.", "Experimenta delay ou reverb com moderação."), "Toca a mesma frase com som limpo e depois com overdrive. Compara a clareza das notas."),
         "Treino e evolução" to Lesson("Treino com objetivo", "Uma sessão equilibrada alterna técnica, repertório e criatividade. A regularidade vale mais do que a velocidade.", listOf("Aquece durante cinco minutos com movimentos leves e palhetada lenta.", "Dedica dez minutos à técnica que estás a desenvolver.", "Estuda uma passagem de uma música em pequenos segmentos.", "Reserva cinco minutos para improvisar ou criar uma frase.", "Regista o andamento, as dificuldades e uma pequena vitória da sessão."), "Faz uma sessão de 20 minutos: 5 de aquecimento, 5 de técnica, 5 de repertório e 5 de improvisação. Regista o que correu melhor e escolhe um objetivo para a próxima sessão."),
         "Afinador e metrónomo" to Lesson("Afinação e pulso", "Afinar e praticar com um pulso estável são hábitos essenciais.", listOf("Afinação standard: E–A–D–G–B–E, da corda mais grave à mais aguda.", "Toca uma corda de cada vez e deixa a nota estabilizar.", "No metrónomo, começa devagar e mantém o tempo constante."), "Afina cada corda com o afinador por microfone. Depois, regula o metrónomo para 60 BPM e toca uma nota em cada clique durante um minuto."),
@@ -130,6 +130,11 @@ class MainActivity : Activity() {
         content.addView(label(section.uppercase(), bright, 12f, true), margins(bottom = 8))
         content.addView(label(lesson.title, white, 28f, true), margins(bottom = 8))
         content.addView(label(lesson.intro, muted, 16f), margins(bottom = 18))
+        if (section == "Solos e improvisação") {
+            content.addView(label("MAPA VISUAL · PENTATÓNICA DE LÁ MENOR", bright, 12f, true), margins(top = 12, bottom = 8))
+            content.addView(pentatonicDiagram(), margins(bottom = 8))
+            content.addView(label("As notas azuis pertencem à escala. As notas douradas são Lá, a tónica. A corda Mi grave está em cima; a corda Mi aguda está em baixo.", muted, 12f), margins(bottom = 12))
+        }
         content.addView(label("PASSOS A SEGUIR", bright, 12f, true), margins(bottom = 8))
         lesson.steps.forEachIndexed { i, step ->
             val row = card(blue).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
@@ -140,11 +145,6 @@ class MainActivity : Activity() {
             })
             row.addView(label(step, white, 15f), LinearLayout.LayoutParams(0, -2, 1f).apply { leftMargin = dp(12) })
             content.addView(row, margins(bottom = 9))
-        }
-        if (section == "Solos e improvisação") {
-            content.addView(label("MAPA VISUAL · PENTATÓNICA DE LÁ MENOR", bright, 12f, true), margins(top = 16, bottom = 8))
-            content.addView(pentatonicDiagram(), margins(bottom = 8))
-            content.addView(label("Os círculos azuis assinalam as notas da escala. Os círculos dourados representam a nota Lá, ponto de repouso para as tuas frases.", muted, 12f), margins(bottom = 8))
         }
         val exercise = card(blue)
         exercise.addView(label("EXERCÍCIO PRÁTICO", bright, 12f, true))
@@ -191,6 +191,10 @@ class MainActivity : Activity() {
             block.addView(label(day.second, white, 13f), margins(top = 4, bottom = 4))
             block.addView(label(day.third, muted, 12f))
             plan.addView(block, margins(bottom = 8))
+            if (day.first.startsWith("QUARTA")) {
+                plan.addView(label("MAPA DA ESCALA · LÁ MENOR", bright, 11f, true), margins(top = 2, bottom = 5))
+                plan.addView(pentatonicDiagram(), margins(bottom = 10))
+            }
         }
         plan.addView(label("REGRA DE PROGRESSÃO", bright, 12f, true), margins(top = 6, bottom = 4))
         plan.addView(label("Quando conseguires executar um exercício corretamente em três repetições consecutivas, aumenta apenas 3 a 5 BPM. Se perderes a limpeza ou sentires tensão, reduz o andamento. A qualidade vem antes da velocidade.", white, 13f))
