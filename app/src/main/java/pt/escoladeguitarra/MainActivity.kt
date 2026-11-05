@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.RectF
 import android.view.View
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -43,7 +44,7 @@ class MainActivity : Activity() {
     @Volatile private var tunerRunning = false
     private var tunerRecord: AudioRecord? = null
     private var tunerThread: Thread? = null
-    private var tunerStatus: TextView? = null
+    private var tunerStatus: AnalogTunerView? = null
     private val metronomeTick = object : Runnable {
         override fun run() {
             if (!metronomeRunning) return
@@ -226,8 +227,8 @@ class MainActivity : Activity() {
         val tuner = card(blue)
         tuner.addView(label("AFINADOR CROMÁTICO", bright, 13f, true))
         tuner.addView(label("Afina uma corda de cada vez, num ambiente silencioso.", muted, 13f), margins(top = 5, bottom = 10))
-        tunerStatus = label("Pronto para ouvir a guitarra", white, 21f, true).apply { gravity = Gravity.CENTER }
-        tuner.addView(tunerStatus!!, margins(bottom = 8))
+        tunerStatus = AnalogTunerView()
+        tuner.addView(tunerStatus!!, LinearLayout.LayoutParams(-1, dp(230)).apply { bottomMargin = dp(8) })
         tuner.addView(button("▶  Iniciar / parar afinador") {
             if (tunerRunning) stopTuner() else if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) startTuner() else requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 741)
         }, matchHeight(48))
@@ -237,7 +238,7 @@ class MainActivity : Activity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 741) { if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) startTuner() else tunerStatus?.text = "É necessária autorização do microfone" }
+        if (requestCode == 741) { if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) startTuner() else tunerStatus?.setStatus("Autoriza o microfone para afinar") }
     }
 
     private fun startTuner() {
@@ -246,8 +247,8 @@ class MainActivity : Activity() {
             val rate = 44100
             val size = maxOf(AudioRecord.getMinBufferSize(rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT), 8192)
             val recorder = AudioRecord(MediaRecorder.AudioSource.MIC, rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, size)
-            if (recorder.state != AudioRecord.STATE_INITIALIZED) { recorder.release(); tunerStatus?.text = "Microfone indisponível"; return }
-            tunerRecord = recorder; tunerRunning = true; recorder.startRecording(); tunerStatus?.text = "A ouvir… toca uma corda"
+            if (recorder.state != AudioRecord.STATE_INITIALIZED) { recorder.release(); tunerStatus?.setStatus("Microfone indisponível"); return }
+            tunerRecord = recorder; tunerRunning = true; recorder.startRecording(); tunerStatus?.setStatus("A ouvir… toca uma corda")
             val worker = Thread {
                 val samples = ShortArray(4096)
                 while (tunerRunning && tunerRecord === recorder) {
@@ -261,15 +262,80 @@ class MainActivity : Activity() {
                                 val target = 440.0 * Math.pow(2.0, (midi - 69) / 12.0)
                                 val cents = (1200.0 * kotlin.math.ln(hz / target) / kotlin.math.ln(2.0)).roundToInt()
                                 val dir = when { cents < -3 -> "grave"; cents > 3 -> "aguda"; else -> "afinada" }
-                                tunerStatus?.text = "${names[(midi % 12 + 12) % 12]}${midi / 12 - 1}  ${cents} cents · $dir"
-                            } else if (tunerRunning && tunerRecord === recorder) tunerStatus?.text = "Toca uma corda isolada…"
+                                tunerStatus?.setReading("${names[(midi % 12 + 12) % 12]}${midi / 12 - 1}", cents)
+                            } else if (tunerRunning && tunerRecord === recorder) tunerStatus?.setStatus("Toca uma corda isolada…")
                         }
                     }
                 }
             }.apply { priority = Thread.MAX_PRIORITY }
             tunerThread = worker
             worker.start()
-        } catch (_: Exception) { tunerRunning = false; tunerStatus?.text = "Não foi possível iniciar o afinador" }
+        } catch (_: Exception) { tunerRunning = false; tunerStatus?.setStatus("Não foi possível iniciar o afinador") }
+    }
+
+    /** Mostrador analógico com escala de cents, zona verde e ponteiro em tempo real. */
+    private inner class AnalogTunerView : View(this@MainActivity) {
+        private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(72, 91, 112); style = Paint.Style.STROKE; strokeWidth = dp(13).toFloat(); strokeCap = Paint.Cap.ROUND }
+        private val greenPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(52, 190, 125); style = Paint.Style.STROKE; strokeWidth = dp(13).toFloat(); strokeCap = Paint.Cap.ROUND }
+        private val tickPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; strokeWidth = dp(2).toFloat() }
+        private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = muted; textSize = dp(11).toFloat(); textAlign = Paint.Align.CENTER }
+        private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(31).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
+        private val centsPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; textSize = dp(14).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
+        private val needlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 55); strokeWidth = dp(4).toFloat(); strokeCap = Paint.Cap.ROUND }
+        private val pivotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; style = Paint.Style.FILL }
+        private var note = "—"
+        private var cents = 0
+        private var status = "Pronto para ouvir a guitarra"
+        private var hasReading = false
+
+        fun setStatus(message: String) { status = message; hasReading = false; invalidate() }
+        fun setReading(noteName: String, offset: Int) {
+            note = noteName
+            cents = offset.coerceIn(-50, 50)
+            status = when { offset < -5 -> "GRAVE · aperta a corda"; offset > 5 -> "AGUDA · alivia a corda"; else -> "AFINADA · no centro" }
+            hasReading = true
+            invalidate()
+        }
+
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            val cx = width / 2f
+            val cy = height * 0.78f
+            val radius = minOf(width * 0.43f, height * 0.69f)
+            val rect = RectF(cx - radius, cy - radius, cx + radius, cy + radius)
+            canvas.drawArc(rect, 180f, 180f, false, arcPaint)
+            canvas.drawArc(rect, 171f, 18f, false, greenPaint)
+
+            for (value in -50..50 step 10) {
+                val angle = Math.toRadians(180.0 + (value + 50) * 1.8)
+                val inner = radius - dp(if (value % 20 == 0) 18 else 13)
+                val outer = radius - dp(3)
+                val x1 = cx + kotlin.math.cos(angle).toFloat() * inner
+                val y1 = cy + kotlin.math.sin(angle).toFloat() * inner
+                val x2 = cx + kotlin.math.cos(angle).toFloat() * outer
+                val y2 = cy + kotlin.math.sin(angle).toFloat() * outer
+                canvas.drawLine(x1, y1, x2, y2, tickPaint)
+                if (value % 20 == 0) {
+                    val labelRadius = radius - dp(30)
+                    val lx = cx + kotlin.math.cos(angle).toFloat() * labelRadius
+                    val ly = cy + kotlin.math.sin(angle).toFloat() * labelRadius + dp(4)
+                    canvas.drawText(if (value > 0) "+$value" else value.toString(), lx, ly, textPaint)
+                }
+            }
+
+            val needleValue = if (hasReading) cents.coerceIn(-50, 50) else 0
+            val needleAngle = Math.toRadians(180.0 + (needleValue + 50) * 1.8)
+            val needleLength = radius - dp(39)
+            val nx = cx + kotlin.math.cos(needleAngle).toFloat() * needleLength
+            val ny = cy + kotlin.math.sin(needleAngle).toFloat() * needleLength
+            canvas.drawLine(cx, cy, nx, ny, needlePaint)
+            canvas.drawCircle(cx, cy, dp(8).toFloat(), pivotPaint)
+
+            canvas.drawText(if (hasReading) note else "—", cx, cy - radius * 0.24f, notePaint)
+            canvas.drawText(if (hasReading) (if (cents > 0) "+$cents" else cents.toString()) + " cents" else "−50       0       +50", cx, cy - radius * 0.02f, centsPaint)
+            canvas.drawText(status, cx, height - dp(5).toFloat(), textPaint)
+        }
+        init { contentDescription = "Afinador analógico com ponteiro e escala de cents" }
     }
 
     private fun detectPitch(data: ShortArray, count: Int, rate: Int): Double {
@@ -303,7 +369,7 @@ class MainActivity : Activity() {
         }
         try { recorder?.release() } catch (_: Exception) { }
         if (tunerThread === worker) tunerThread = null
-        tunerStatus?.text = "Afinador parado"
+        tunerStatus?.setStatus("Afinador parado")
     }
 
     private fun addMetronome(content: LinearLayout) {
