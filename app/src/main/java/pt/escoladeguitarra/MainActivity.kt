@@ -379,12 +379,22 @@ class MainActivity : Activity() {
     }
 
     private fun stopTuner() {
+        // Primeiro sinaliza a saída e desassocia o gravador; assim o ciclo de leitura
+        // deixa de publicar resultados enquanto o recurso está a ser encerrado.
         tunerRunning = false
         val recorder = tunerRecord
+        val worker = tunerThread
         tunerRecord = null
-        try { if (recorder?.recordingState == AudioRecord.RECORDSTATE_RECORDING) recorder.stop() } catch (_: Exception) {}
-        try { recorder?.release() } catch (_: Exception) {}
-        tunerThread = null
+        try {
+            if (recorder?.recordingState == AudioRecord.RECORDSTATE_RECORDING) recorder.stop()
+        } catch (_: Exception) { }
+        // AudioRecord.stop() normalmente desbloqueia read(). Aguarda brevemente pela
+        // thread antes de libertar o recurso, evitando libertação concorrente.
+        if (worker != null && worker !== Thread.currentThread()) {
+            try { worker.join(300) } catch (_: InterruptedException) { Thread.currentThread().interrupt() }
+        }
+        try { recorder?.release() } catch (_: Exception) { }
+        if (tunerThread === worker) tunerThread = null
         tunerStatus?.text = "Afinador parado"
     }
 
