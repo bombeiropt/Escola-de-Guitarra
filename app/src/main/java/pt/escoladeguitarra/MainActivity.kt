@@ -77,6 +77,7 @@ class MainActivity : Activity() {
         window.navigationBarColor = bg
         root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(bg) }
         setContentView(root)
+        metronomeBpm = getSharedPreferences("guitar_progress", MODE_PRIVATE).getInt("metronome_bpm", 80).coerceIn(40, 200)
         showHome()
     }
 
@@ -196,6 +197,7 @@ class MainActivity : Activity() {
         val feedback = label(" ", muted, 13f)
         val answers = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         fun nextQuestion() {
+            stopEarTrainingAudio()
             current = intervals.random()
             answered = false
             prompt.text = "Que intervalo ouviste?"
@@ -398,6 +400,7 @@ class MainActivity : Activity() {
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                     metronomeBpm = progress + 40
+                    if (fromUser) getSharedPreferences("guitar_progress", MODE_PRIVATE).edit().putInt("metronome_bpm", metronomeBpm).apply()
                     bpmLabel.text = "$metronomeBpm BPM"
                 }
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {}
