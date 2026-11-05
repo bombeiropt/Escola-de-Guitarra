@@ -1,24 +1,57 @@
 # Escola de Guitarra
 
-Aplicação Android para aprendizagem de guitarra elétrica, com aulas progressivas, acordes, dedilhados, técnica, solos, treino e ferramentas práticas.
+Aplicação Android nativa para aprendizagem de guitarra elétrica, com interface em português europeu e tema escuro azul elétrico.
 
-## Objetivos
+## Estrutura do projeto
 
-- Interface moderna, escura e intuitiva.
-- Conteúdo pedagógico em português europeu.
-- Percurso de aprendizagem do nível inicial ao avançado, com foco inicial no nível intermédio.
-- Aulas com imagens demonstrativas realistas, áudio e exercícios interativos.
-- Secções independentes para músicas, acordes e dedilhados, técnica, improvisação, efeitos, treino, afinador e metrónomo.
-- Progresso guardado localmente e funcionamento offline sempre que possível.
-- Conteúdos musicais originais ou devidamente licenciados; ligações externas para materiais protegidos.
+```text
+Escola-de-Guitarra/
+├── .github/
+│   └── workflows/
+│       └── android.yml
+├── app/
+│   ├── build.gradle.kts
+│   └── src/
+│       └── main/
+│           ├── AndroidManifest.xml
+│           └── java/
+│               └── pt/
+│                   └── escoladeguitarra/
+│                       └── MainActivity.kt
+├── build.gradle.kts
+├── gradle.properties
+├── settings.gradle.kts
+└── README.md
+```
 
-## Tecnologia
+## Funcionalidades incluídas
 
-- Android nativo
-- Kotlin
-- Gradle Kotlin DSL
-- Compilação automática de APK através do GitHub Actions
+- Percurso de aprendizagem com aulas, passos e exercícios.
+- Repertório sugerido por nível, sem distribuir tablaturas ou gravações protegidas.
+- Diagramas de acordes e progressões de rock, pop e blues.
+- Técnica de guitarra, pentatónica menor de Lá e improvisação.
+- Teoria musical aplicada ao braço da guitarra.
+- Treino auditivo interativo de intervalos, com pontuação e histórico persistente.
+- Afinador cromático por microfone, com indicação de nota e desvio em cents.
+- Metrónomo ajustável entre 40 e 200 BPM.
+- Plano semanal de estudo e registo local de exercícios concluídos.
+- Preferência de andamento do metrónomo guardada no dispositivo.
+- Gestão do ciclo de vida dos recursos de áudio para evitar reprodução indevida em segundo plano.
 
-## Estado
+## Tecnologia e compatibilidade
 
-Projeto inicializado. A estrutura Android e a primeira versão da interface serão adicionadas progressivamente.
+- Android nativo, Kotlin e Gradle Kotlin DSL.
+- Android mínimo: API 23.
+- Compilação: SDK 35 e Java 17.
+- Progresso e preferências guardados localmente com SharedPreferences.
+- O afinador requer autorização de acesso ao microfone.
+- O workflow GitHub Actions produz um APK de teste (debug).
+
+## Versão
+
+- Nome: 1.4.0
+- Código: 5
+
+## Limites de validação
+
+Uma compilação bem-sucedida confirma que o projeto compila no ambiente de CI; não substitui testes em dispositivos Android reais. O APK debug destina-se a testes e não é uma versão release assinada para distribuição comercial.
