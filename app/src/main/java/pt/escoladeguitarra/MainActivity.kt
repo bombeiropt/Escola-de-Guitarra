@@ -83,38 +83,98 @@ class MainActivity : Activity() {
         stopMetronome()
         stopTuner()
         root.removeAllViews()
-        val content = page()
-        content.addView(label("ESCOLA DE GUITARRA", bright, 12f, true))
-        content.addView(label("A tua música\ncomeça aqui.", white, 34f, true))
-        content.addView(label("Aprende, pratica e evolui ao teu ritmo.", muted, 16f), margins(bottom = 20))
-        val done = getSharedPreferences("guitar_progress", MODE_PRIVATE).getInt("completed", 0)
-        val feature = card(blue)
-        feature.addView(label("PERCURSO DE APRENDIZAGEM", bright, 11f, true))
-        feature.addView(label("Do primeiro acorde ao teu primeiro solo.", white, 19f, true))
-        feature.addView(label("Aulas práticas, exercícios e progresso guardado neste dispositivo.", muted, 14f))
-        feature.addView(label("EXERCÍCIOS CONCLUÍDOS: " + done, bright, 12f, true))
-        feature.addView(button("Começar a aprender") { showLesson("Aulas e aprendizagem") }, matchHeight(50).apply { topMargin = dp(12) })
-        content.addView(feature, margins(bottom = 24))
-        content.addView(label("EXPLORAR A ESCOLA", bright, 12f, true), margins(bottom = 10))
-        lessons.keys.forEachIndexed { i, name ->
-            val row = LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-                setPadding(dp(14), dp(12), dp(12), dp(12)); background = boxDrawable(blue, 14)
-                isClickable = true; isFocusable = true; setOnClickListener { showLesson(name) }
-            }
-            row.addView(TextView(this).apply {
-                text = String.format("%02d", i + 1); textSize = 13f; typeface = Typeface.DEFAULT_BOLD
-                setTextColor(bright); gravity = Gravity.CENTER; background = roundDrawable(Color.rgb(7, 35, 62), 10)
-                layoutParams = LinearLayout.LayoutParams(dp(42), dp(42))
-            })
-            val labels = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), 0, dp(4), 0) }
-            labels.addView(label(name, white, 15f, true))
-            labels.addView(label(lessons.getValue(name).intro, muted, 12f))
-            row.addView(labels, LinearLayout.LayoutParams(0, -2, 1f))
-            row.addView(label("›", bright, 26f))
-            content.addView(row, margins(bottom = 9))
+        val content = page().apply { setPadding(dp(14), dp(16), dp(14), dp(28)) }
+
+        // Cabeçalho com acabamento de madeira escura e moldura dourada.
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(dp(18), dp(22), dp(18), dp(20))
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(Color.rgb(105, 61, 31), Color.rgb(48, 29, 20), Color.rgb(24, 20, 18))
+            ).apply { cornerRadius = dp(18).toFloat(); setStroke(dp(2), Color.rgb(205, 157, 76)) }
         }
-        content.addView(label("PRATICA COM REGULARIDADE · EVOLUI COM CONFIANÇA", muted, 10f), margins(top = 20))
+        header.addView(label("♫  ESCOLA DE GUITARRA  ♫", Color.rgb(255, 220, 150), 23f, true))
+        header.addView(label("APRENDER  ·  PRATICAR  ·  EVOLUIR", white, 11f, true))
+        header.addView(label("Do primeiro acorde ao teu primeiro solo.", Color.rgb(238, 220, 194), 13f), margins(top = 8))
+        content.addView(header, margins(bottom = 16))
+
+        val done = getSharedPreferences("guitar_progress", MODE_PRIVATE).getInt("completed", 0)
+        val progress = card(Color.rgb(205, 157, 76)).apply {
+            background = GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
+                intArrayOf(Color.rgb(18, 42, 62), Color.rgb(8, 18, 31))).apply {
+                cornerRadius = dp(14).toFloat(); setStroke(dp(1), blue)
+            }
+        }
+        progress.addView(label("O TEU PERCURSO", Color.rgb(255, 211, 126), 11f, true))
+        progress.addView(label("$done exercícios concluídos", white, 17f, true))
+        progress.addView(label("O progresso fica guardado neste dispositivo.", muted, 12f))
+        content.addView(progress, margins(bottom = 18))
+
+        content.addView(label("EXPLORAR A ESCOLA", Color.rgb(255, 211, 126), 12f, true), margins(bottom = 10))
+        val descriptions = mapOf(
+            "Aulas e aprendizagem" to Triple("♫", "Aulas passo a passo", "Do nível inicial ao avançado"),
+            "Teoria musical" to Triple("𝄞", "Notas, escalas e harmonia", "Aprende a compreender a música"),
+            "Afinador e metrónomo" to Triple("♩", "Afinação e ritmo", "Afinador analógico e metrónomo"),
+            "Acordes & dedilhados" to Triple("♬", "Acordes e dedilhados", "Diagramas e progressões"),
+            "Solos e improvisação" to Triple("🎸", "Solos e improvisação", "Escalas e frases de guitarra"),
+            "Músicas para aprender" to Triple("▶", "Repertório", "Aprende músicas por etapas"),
+            "Técnica de guitarra" to Triple("✦", "Técnica", "Palhetada, slides, bends e vibrato"),
+            "Som e efeitos" to Triple("♫", "Som e efeitos", "Constrói o teu próprio som"),
+            "Treino e evolução" to Triple("✓", "Plano de evolução", "Organiza a tua prática semanal")
+        )
+        val entries = lessons.keys.toList()
+        var index = 0
+        while (index < entries.size) {
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            for (column in 0..1) {
+                if (index < entries.size) {
+                    val section = entries[index]
+                    val info = descriptions[section]!!
+                    val tile = LinearLayout(this).apply {
+                        orientation = LinearLayout.VERTICAL
+                        gravity = Gravity.CENTER_HORIZONTAL
+                        setPadding(dp(10), dp(13), dp(10), dp(13))
+                        background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                            intArrayOf(Color.rgb(24, 37, 53), Color.rgb(8, 14, 24))).apply {
+                            cornerRadius = dp(15).toFloat()
+                            setStroke(dp(1), Color.rgb(0, 145, 235))
+                        }
+                        isClickable = true
+                        isFocusable = true
+                        setOnClickListener { showLesson(section) }
+                    }
+                    val symbol = TextView(this).apply {
+                        text = info.first
+                        textSize = 29f
+                        gravity = Gravity.CENTER
+                        setTextColor(Color.rgb(255, 197, 91))
+                        background = GradientDrawable().apply {
+                            shape = GradientDrawable.OVAL
+                            setColor(Color.rgb(9, 30, 48))
+                            setStroke(dp(1), Color.rgb(0, 145, 235))
+                        }
+                        layoutParams = LinearLayout.LayoutParams(dp(54), dp(54)).apply { bottomMargin = dp(9) }
+                    }
+                    tile.addView(symbol)
+                    tile.addView(label(info.second, white, 14f, true).apply { gravity = Gravity.CENTER })
+                    tile.addView(label(info.third, muted, 11f).apply { gravity = Gravity.CENTER; textAlignment = TextView.TEXT_ALIGNMENT_CENTER })
+                    tile.addView(label("ABRIR  ›", Color.rgb(255, 197, 91), 10f, true), margins(top = 8))
+                    row.addView(tile, LinearLayout.LayoutParams(0, dp(158), 1f).apply {
+                        if (column == 0) rightMargin = dp(6) else leftMargin = dp(6)
+                        bottomMargin = dp(10)
+                    })
+                    index++
+                } else {
+                    row.addView(View(this), LinearLayout.LayoutParams(0, 1, 1f))
+                }
+            }
+            content.addView(row)
+        }
+        content.addView(label("ESCOLA DE GUITARRA  ·  FEITA PARA APRENDER AO TEU RITMO", muted, 10f).apply {
+            gravity = Gravity.CENTER
+        }, margins(top = 12))
         attach(content)
     }
 
