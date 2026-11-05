@@ -378,8 +378,10 @@ class MainActivity : Activity() {
         fun setStatus(message: String) { status = message; hasReading = false; invalidate() }
         fun setReading(noteName: String, offset: Int) {
             note = noteName
-            cents = offset.coerceIn(-50, 50)
-            status = when { offset < -5 -> "GRAVE · aperta a corda"; offset > 5 -> "AGUDA · alivia a corda"; else -> "AFINADA · no centro" }
+            val bounded = offset.coerceIn(-50, 50)
+            // Suavização exponencial: reduz tremores do ponteiro sem atrasar demasiado a resposta.
+            cents = if (hasReading) (cents * 0.68 + bounded * 0.32).roundToInt() else bounded
+            status = when { cents < -5 -> "GRAVE · aperta a corda"; cents > 5 -> "AGUDA · alivia a corda"; else -> "AFINADA · no centro" }
             hasReading = true
             invalidate()
         }
