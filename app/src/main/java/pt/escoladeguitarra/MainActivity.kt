@@ -304,7 +304,7 @@ class MainActivity : Activity() {
             val radius = minOf(width * 0.43f, height * 0.69f)
             val rect = RectF(cx - radius, cy - radius, cx + radius, cy + radius)
             canvas.drawArc(rect, 180f, 180f, false, arcPaint)
-            canvas.drawArc(rect, 171f, 18f, false, greenPaint)
+            canvas.drawArc(rect, 261f, 18f, false, greenPaint)
 
             for (value in -50..50 step 10) {
                 val angle = Math.toRadians(180.0 + (value + 50) * 1.8)
