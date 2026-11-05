@@ -430,11 +430,11 @@ class MainActivity : Activity() {
 
     private fun majorScaleDiagram(): View {
         return object : View(this) {
-            private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; strokeWidth = dp(1.5f).toFloat() }
+            private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; strokeWidth = dp(2).toFloat() }
             private val rootPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 55); style = Paint.Style.FILL }
             private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; style = Paint.Style.FILL }
-            private val noteText = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textSize = dp(9f).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
-            private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(10f).toFloat(); typeface = Typeface.DEFAULT_BOLD }
+            private val noteText = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textSize = dp(9).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
+            private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(10).toFloat(); typeface = Typeface.DEFAULT_BOLD }
             private val notes = arrayOf(
                 intArrayOf(0,3), intArrayOf(0,5), intArrayOf(0,7), intArrayOf(0,8),
                 intArrayOf(1,3), intArrayOf(1,5), intArrayOf(1,7),
@@ -453,32 +453,32 @@ class MainActivity : Activity() {
             )
             override fun onDraw(canvas: Canvas) {
                 super.onDraw(canvas)
-                val left = dp(34f).toFloat()
-                val right = width - dp(14f).toFloat()
-                val top = dp(34f).toFloat()
-                val bottom = height - dp(22f).toFloat()
+                val left = dp(34).toFloat()
+                val right = width - dp(14).toFloat()
+                val top = dp(34).toFloat()
+                val bottom = height - dp(22).toFloat()
                 val sx = (right - left) / 5f
                 val sy = (bottom - top) / 5f
                 val strings = arrayOf("E", "A", "D", "G", "B", "e")
                 for (i in 0..5) {
                     val y = top + i * sy
                     canvas.drawLine(left, y, right, y, linePaint)
-                    canvas.drawText(strings[i], dp(9f).toFloat(), y + dp(4f).toFloat(), labelPaint)
+                    canvas.drawText(strings[i], dp(9).toFloat(), y + dp(4).toFloat(), labelPaint)
                 }
                 for (fret in 3..8) {
                     val x = left + (fret - 3) * sx
                     canvas.drawLine(x, top, x, bottom, linePaint)
-                    canvas.drawText(fret.toString(), x + sx / 2f - dp(3f), top - dp(9f).toFloat(), labelPaint)
+                    canvas.drawText(fret.toString(), x + sx / 2f - dp(3), top - dp(9).toFloat(), labelPaint)
                 }
                 notes.forEach { p ->
                     val x = left + (p[1] - 3) * sx + sx / 2f
                     val y = top + p[0] * sy
                     val name = names["${p[0]}:${p[1]}"] ?: ""
                     val isRoot = name == "C"
-                    canvas.drawCircle(x, y, dp(9f).toFloat(), if (isRoot) rootPaint else notePaint)
-                    canvas.drawText(name, x, y + dp(3f).toFloat(), noteText)
+                    canvas.drawCircle(x, y, dp(9).toFloat(), if (isRoot) rootPaint else notePaint)
+                    canvas.drawText(name, x, y + dp(3).toFloat(), noteText)
                 }
-                canvas.drawText("Trastes 3–8", left, height - dp(5f).toFloat(), labelPaint)
+                canvas.drawText("Trastes 3–8", left, height - dp(5).toFloat(), labelPaint)
             }
         }.apply {
             layoutParams = LinearLayout.LayoutParams(-1, dp(190))
