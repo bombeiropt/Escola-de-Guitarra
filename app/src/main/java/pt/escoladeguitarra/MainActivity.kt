@@ -718,52 +718,76 @@ class MainActivity : Activity() {
 
     private fun chordDiagram(title: String, frets: IntArray, fingers: IntArray): View {
         return object : View(this) {
-            private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; strokeWidth = dp(2).toFloat(); style = Paint.Style.STROKE }
-            private val nutPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; strokeWidth = dp(4).toFloat() }
-            private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(13).toFloat(); typeface = Typeface.DEFAULT_BOLD }
-            private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; style = Paint.Style.FILL }
-            private val noteText = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textSize = dp(11).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
+            private val boardPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(83, 48, 27); style = Paint.Style.FILL }
+            private val edgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(193, 145, 76); style = Paint.Style.STROKE; strokeWidth = dp(2).toFloat() }
+            private val fretPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(205, 213, 221); strokeWidth = dp(2).toFloat() }
+            private val nutPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(238, 224, 190); strokeWidth = dp(5).toFloat() }
+            private val stringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(211, 220, 226); style = Paint.Style.STROKE }
+            private val markerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 75); style = Paint.Style.FILL }
+            private val markerText = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(35, 25, 18); textSize = dp(11).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
+            private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(12).toFloat(); typeface = Typeface.DEFAULT_BOLD }
+            private val smallPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(229, 190, 125); textSize = dp(10).toFloat(); typeface = Typeface.DEFAULT_BOLD }
             override fun onDraw(canvas: Canvas) {
                 super.onDraw(canvas)
-                val w = width.toFloat()
-                val left = w * 0.19f
-                val right = w * 0.91f
+                val left = dp(38).toFloat()
+                val right = width - dp(24).toFloat()
                 val top = dp(57).toFloat()
                 val bottom = dp(205).toFloat()
                 val stepX = (right - left) / 5f
                 val stepY = (bottom - top) / 4f
-                canvas.drawText(title, left, dp(23).toFloat(), textPaint)
+                val board = RectF(left - dp(7), top - dp(5), right + dp(7), bottom + dp(5))
+                canvas.drawRoundRect(board, dp(7).toFloat(), dp(7).toFloat(), boardPaint)
+                canvas.drawRoundRect(board, dp(7).toFloat(), dp(7).toFloat(), edgePaint)
+                canvas.drawText(title, left, dp(23).toFloat(), labelPaint)
+                canvas.drawText("CASA", right - dp(28).toFloat(), dp(23).toFloat(), smallPaint)
+
+                // Cordas: seis linhas metálicas com espessura progressiva.
                 val strings = arrayOf("E", "A", "D", "G", "B", "e")
                 for (i in 0..5) {
                     val x = left + i * stepX
-                    canvas.drawLine(x, top, x, bottom, linePaint)
-                    canvas.drawText(strings[i], x - dp(4), top - dp(12).toFloat(), textPaint)
+                    stringPaint.strokeWidth = dp(if (i < 3) 2 else 1).toFloat()
+                    canvas.drawLine(x, top - dp(3), x, bottom + dp(3), stringPaint)
+                    canvas.drawText(strings[i], x - dp(4), top - dp(15).toFloat(), labelPaint)
                 }
+
+                // Quatro espaços de traste, com a pestana mais clara.
                 for (i in 0..4) {
                     val y = top + i * stepY
-                    canvas.drawLine(left, y, right, y, if (i == 0) nutPaint else linePaint)
+                    canvas.drawLine(left, y, right, y, if (i == 0) nutPaint else fretPaint)
+                    if (i < 4) canvas.drawText((i + 1).toString(), dp(8).toFloat(), y + stepY / 2f + dp(4), smallPaint)
                 }
+
+                // Marcadores de cordas soltas, abafadas e dedos.
                 for (i in 0..5) {
                     val x = left + i * stepX
-                    if (frets[i] == 0) {
-                        canvas.drawCircle(x, top - dp(25).toFloat(), dp(6).toFloat(), linePaint)
-                        canvas.drawText("0", x, top - dp(36).toFloat(), textPaint)
-                    } else if (frets[i] < 0) {
-                        val crossY = top - dp(25).toFloat()
-                        canvas.drawLine(x - dp(5), crossY - dp(5), x + dp(5), crossY + dp(5), textPaint)
-                        canvas.drawLine(x - dp(5), crossY + dp(5), x + dp(5), crossY - dp(5), textPaint)
-                    } else {
-                        val y = top + (frets[i] - 0.5f) * stepY
-                        canvas.drawCircle(x, y, dp(10).toFloat(), notePaint)
-                        if (fingers[i] > 0) canvas.drawText(fingers[i].toString(), x, y + dp(4).toFloat(), noteText)
+                    when {
+                        frets[i] == 0 -> {
+                            canvas.drawCircle(x, top - dp(31).toFloat(), dp(5).toFloat(), edgePaint)
+                            canvas.drawText("0", x, top - dp(40).toFloat(), smallPaint.apply { textAlign = Paint.Align.CENTER })
+                        }
+                        frets[i] < 0 -> {
+                            val cy = top - dp(31).toFloat()
+                            val cross = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 126, 110); strokeWidth = dp(2).toFloat() }
+                            canvas.drawLine(x - dp(5), cy - dp(5), x + dp(5), cy + dp(5), cross)
+                            canvas.drawLine(x - dp(5), cy + dp(5), x + dp(5), cy - dp(5), cross)
+                        }
+                        else -> {
+                            val y = top + (frets[i] - 0.5f) * stepY
+                            canvas.drawCircle(x, y, dp(10).toFloat(), markerPaint)
+                            if (fingers[i] > 0) canvas.drawText(fingers[i].toString(), x, y + dp(4).toFloat(), markerText)
+                        }
                     }
                 }
-                canvas.drawText("Trastes", dp(8).toFloat(), bottom + dp(19).toFloat(), textPaint)
+                canvas.drawText("Trastes 1–4", left, height - dp(5).toFloat(), smallPaint)
             }
         }.apply {
             layoutParams = LinearLayout.LayoutParams(-1, dp(235))
-            background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(Color.rgb(39, 48, 53), Color.rgb(9, 20, 31))).apply { cornerRadius = dp(12).toFloat(); setStroke(dp(1), Color.rgb(181, 139, 75)) }
-            contentDescription = "Diagrama do acorde $title"
+            background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(Color.rgb(29, 38, 48), Color.rgb(8, 16, 27))).apply {
+                cornerRadius = dp(12).toFloat()
+                setStroke(dp(1), Color.rgb(181, 139, 75))
+            }
+            contentDescription = "Diagrama visual do acorde $title, com seis cordas e quatro trastes"
         }
     }
 
