@@ -10,6 +10,7 @@ import android.view.View
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.media.ToneGenerator
@@ -203,7 +204,10 @@ class MainActivity : Activity() {
         theory.addView(label("Um traste para o seguinte representa um semitom. Dois trastes representam um tom. Entre Mi–Fá e Si–Dó existe naturalmente apenas um semitom; entre as restantes notas naturais existe um tom.", muted, 13f))
         theory.addView(label("2 · Fórmula da escala maior", white, 17f, true), margins(top = 12, bottom = 4))
         theory.addView(label("Tom · Tom · Semitom · Tom · Tom · Tom · Semitom", bright, 15f, true))
-        theory.addView(label("Exemplo: Dó maior = Dó – Ré – Mi – Fá – Sol – Lá – Si – Dó. Não contém sustenidos nem bemóis.", muted, 13f))
+        theory.addView(label("EXEMPLO VISUAL · ESCALA DE DÓ MAIOR", bright, 12f, true), margins(top = 10, bottom = 6))
+        theory.addView(majorScaleDiagram(), margins(bottom = 8))
+        theory.addView(label("Cada círculo mostra uma nota da escala no braço. Os círculos dourados assinalam a nota Dó. As cordas estão representadas da mais grave (em cima) à mais aguda (em baixo).", muted, 12f))
+        theory.addView(label("Exemplo: Dó maior = Dó – Ré – Mi – Fá – Sol – Lá – Si – Dó. Não contém sustenidos nem bemóis.", muted, 13f), margins(top = 6))
         theory.addView(label("3 · Como se constrói uma tríade", white, 17f, true), margins(top = 12, bottom = 4))
         theory.addView(label("Maior: 1 – 3 – 5 (terça maior + terça menor).\nMenor: 1 – b3 – 5 (terça menor + terça maior).\nExemplos: Dó maior = Dó–Mi–Sol; Lá menor = Lá–Dó–Mi.", muted, 13f))
         theory.addView(label("4 · Intervalos essenciais", white, 17f, true), margins(top = 12, bottom = 4))
@@ -418,6 +422,65 @@ class MainActivity : Activity() {
         }
         panelView.addView(label("Desafio: começa a 60 BPM. Quando conseguires mudar de acorde sem parar e sem cordas abafadas, aumenta 5 BPM.", muted, 12f), margins(top = 3))
         content.addView(panelView, margins(top = 18))
+    }
+
+    private fun majorScaleDiagram(): View {
+        return object : View(this) {
+            private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; strokeWidth = dp(1.5f).toFloat() }
+            private val rootPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 55); style = Paint.Style.FILL }
+            private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; style = Paint.Style.FILL }
+            private val noteText = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textSize = dp(9f).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
+            private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(10f).toFloat(); typeface = Typeface.DEFAULT_BOLD }
+            private val notes = arrayOf(
+                intArrayOf(0,3), intArrayOf(0,5), intArrayOf(0,7), intArrayOf(0,8),
+                intArrayOf(1,3), intArrayOf(1,5), intArrayOf(1,7),
+                intArrayOf(2,3), intArrayOf(2,5), intArrayOf(2,7),
+                intArrayOf(3,4), intArrayOf(3,5), intArrayOf(3,7),
+                intArrayOf(4,3), intArrayOf(4,5), intArrayOf(4,6), intArrayOf(4,8),
+                intArrayOf(5,3), intArrayOf(5,5), intArrayOf(5,7), intArrayOf(5,8)
+            )
+            private val names = mapOf(
+                "0:3" to "G", "0:5" to "A", "0:7" to "B", "0:8" to "C",
+                "1:3" to "C", "1:5" to "D", "1:7" to "E",
+                "2:3" to "F", "2:5" to "G", "2:7" to "A",
+                "3:4" to "B", "3:5" to "C", "3:7" to "D",
+                "4:3" to "D", "4:5" to "E", "4:6" to "F", "4:8" to "G",
+                "5:3" to "G", "5:5" to "A", "5:7" to "B", "5:8" to "C"
+            )
+            override fun onDraw(canvas: Canvas) {
+                super.onDraw(canvas)
+                val left = dp(34f).toFloat()
+                val right = width - dp(14f).toFloat()
+                val top = dp(34f).toFloat()
+                val bottom = height - dp(22f).toFloat()
+                val sx = (right - left) / 5f
+                val sy = (bottom - top) / 5f
+                val strings = arrayOf("E", "A", "D", "G", "B", "e")
+                for (i in 0..5) {
+                    val y = top + i * sy
+                    canvas.drawLine(left, y, right, y, linePaint)
+                    canvas.drawText(strings[i], dp(9f).toFloat(), y + dp(4f).toFloat(), labelPaint)
+                }
+                for (fret in 3..8) {
+                    val x = left + (fret - 3) * sx
+                    canvas.drawLine(x, top, x, bottom, linePaint)
+                    canvas.drawText(fret.toString(), x + sx / 2f - dp(3f), top - dp(9f).toFloat(), labelPaint)
+                }
+                notes.forEach { p ->
+                    val x = left + (p[1] - 3) * sx + sx / 2f
+                    val y = top + p[0] * sy
+                    val name = names["${p[0]}:${p[1]}"] ?: ""
+                    val isRoot = name == "C"
+                    canvas.drawCircle(x, y, dp(9f).toFloat(), if (isRoot) rootPaint else notePaint)
+                    canvas.drawText(name, x, y + dp(3f).toFloat(), noteText)
+                }
+                canvas.drawText("Trastes 3–8", left, height - dp(5f).toFloat(), labelPaint)
+            }
+        }.apply {
+            layoutParams = LinearLayout.LayoutParams(-1, dp(190))
+            background = roundDrawable(Color.rgb(7, 35, 62), 12)
+            contentDescription = "Diagrama da escala de Dó maior no braço da guitarra, trastes 3 a 8"
+        }
     }
 
     private fun pentatonicDiagram(): View {
