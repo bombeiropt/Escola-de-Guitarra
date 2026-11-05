@@ -604,11 +604,49 @@ class MainActivity : Activity() {
 
     private fun majorScaleDiagram(): View {
         return object : View(this) {
-            private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; strokeWidth = dp(2).toFloat() }
-            private val rootPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 55); style = Paint.Style.FILL }
-            private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; style = Paint.Style.FILL }
-            private val noteText = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textSize = dp(9).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
-            private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(10).toFloat(); typeface = Typeface.DEFAULT_BOLD }
+            private val wood = Paint(Paint.ANTI_ALIAS_FLAG)
+            private val fretPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                shader = LinearGradient(0f, 0f, dp(5).toFloat(), 0f,
+                    intArrayOf(Color.rgb(65, 72, 78), Color.rgb(225, 230, 232), Color.rgb(90, 100, 108)),
+                    null, Shader.TileMode.CLAMP)
+                strokeWidth = dp(3).toFloat()
+            }
+            private val stringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.rgb(220, 222, 218)
+                strokeWidth = dp(1.4).toFloat()
+            }
+            private val thinStringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.rgb(150, 165, 174)
+                strokeWidth = dp(1).toFloat()
+            }
+            private val edgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.rgb(196, 151, 82)
+                style = Paint.Style.STROKE
+                strokeWidth = dp(2).toFloat()
+            }
+            private val rootPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.rgb(255, 190, 55)
+                style = Paint.Style.FILL
+            }
+            private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.rgb(65, 190, 245)
+                style = Paint.Style.FILL
+            }
+            private val markerText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.rgb(8, 19, 29)
+                textSize = dp(10).toFloat()
+                textAlign = Paint.Align.CENTER
+                typeface = Typeface.DEFAULT_BOLD
+            }
+            private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+                textSize = dp(10).toFloat()
+                typeface = Typeface.DEFAULT_BOLD
+            }
+            private val smallPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.rgb(203, 213, 222)
+                textSize = dp(9).toFloat()
+            }
             private val notes = arrayOf(
                 intArrayOf(0,3), intArrayOf(0,5), intArrayOf(0,7), intArrayOf(0,8),
                 intArrayOf(1,3), intArrayOf(1,5), intArrayOf(1,7),
@@ -628,36 +666,51 @@ class MainActivity : Activity() {
             override fun onDraw(canvas: Canvas) {
                 super.onDraw(canvas)
                 val left = dp(34).toFloat()
-                val right = width - dp(14).toFloat()
-                val top = dp(34).toFloat()
-                val bottom = height - dp(22).toFloat()
-                val sx = (right - left) / 5f
-                val sy = (bottom - top) / 5f
-                val strings = arrayOf("E", "A", "D", "G", "B", "e")
+                val right = width - dp(12).toFloat()
+                val top = dp(38).toFloat()
+                val bottom = height - dp(28).toFloat()
+                val fretWidth = (right - left) / 5f
+                val stringGap = (bottom - top) / 5f
+                val board = RectF(left - dp(7), top - dp(12), right + dp(7), bottom + dp(10))
+                wood.shader = LinearGradient(0f, board.top, 0f, board.bottom,
+                    intArrayOf(Color.rgb(105, 67, 39), Color.rgb(64, 39, 27), Color.rgb(91, 55, 32)),
+                    null, Shader.TileMode.CLAMP)
+                canvas.drawRoundRect(board, dp(10).toFloat(), dp(10).toFloat(), wood)
+                canvas.drawRoundRect(board, dp(10).toFloat(), dp(10).toFloat(), edgePaint)
+
+                // Pequenas marcas de posição do braço, como num instrumento real.
+                for (fret in listOf(5, 7)) {
+                    val x = left + (fret - 3.5f) * fretWidth
+                    canvas.drawCircle(x, (top + bottom) / 2f, dp(3).toFloat(), Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(220, 197, 158) })
+                }
                 for (i in 0..5) {
-                    val y = top + i * sy
-                    canvas.drawLine(left, y, right, y, linePaint)
-                    canvas.drawText(strings[i], dp(9).toFloat(), y + dp(4).toFloat(), labelPaint)
+                    val y = top + i * stringGap
+                    canvas.drawLine(left, y, right, y, if (i < 3) stringPaint else thinStringPaint)
+                    canvas.drawText(arrayOf("E", "A", "D", "G", "B", "e")[i], dp(8).toFloat(), y + dp(4).toFloat(), labelPaint)
                 }
                 for (fret in 3..8) {
-                    val x = left + (fret - 3) * sx
-                    canvas.drawLine(x, top, x, bottom, linePaint)
-                    canvas.drawText(fret.toString(), x + sx / 2f - dp(3), top - dp(9).toFloat(), labelPaint)
+                    val x = left + (fret - 3) * fretWidth
+                    canvas.drawLine(x, top - dp(7), x, bottom + dp(7), fretPaint)
+                    canvas.drawText(fret.toString(), x + fretWidth / 2f, top - dp(17).toFloat(), labelPaint)
                 }
                 notes.forEach { p ->
-                    val x = left + (p[1] - 3) * sx + sx / 2f
-                    val y = top + p[0] * sy
+                    val x = left + (p[1] - 3) * fretWidth + fretWidth / 2f
+                    val y = top + p[0] * stringGap
                     val name = names["${p[0]}:${p[1]}"] ?: ""
                     val isRoot = name == "C"
-                    canvas.drawCircle(x, y, dp(9).toFloat(), if (isRoot) rootPaint else notePaint)
-                    canvas.drawText(name, x, y + dp(3).toFloat(), noteText)
+                    canvas.drawCircle(x, y, dp(10).toFloat(), if (isRoot) rootPaint else notePaint)
+                    canvas.drawText(name, x, y + dp(3.5).toFloat(), markerText)
                 }
-                canvas.drawText("Trastes 3–8", left, height - dp(5).toFloat(), labelPaint)
+                canvas.drawText("TRASTES 3–8  ·  AFINAÇÃO STANDARD", left, height - dp(7).toFloat(), smallPaint)
             }
         }.apply {
-            layoutParams = LinearLayout.LayoutParams(-1, dp(190))
-            background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(Color.rgb(42, 52, 57), Color.rgb(13, 25, 36))).apply { cornerRadius = dp(12).toFloat(); setStroke(dp(1), Color.rgb(181, 139, 75)) }
-            contentDescription = "Diagrama da escala de Dó maior no braço da guitarra, trastes 3 a 8"
+            layoutParams = LinearLayout.LayoutParams(-1, dp(218))
+            background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(Color.rgb(18, 29, 40), Color.rgb(8, 16, 25))).apply {
+                cornerRadius = dp(14).toFloat()
+                setStroke(dp(1), Color.rgb(181, 139, 75))
+            }
+            contentDescription = "Braço de guitarra com acabamento de madeira, escala de Dó maior nos trastes 3 a 8; notas Dó a dourado e restantes notas a azul"
         }
     }
 
