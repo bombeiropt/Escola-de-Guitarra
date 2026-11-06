@@ -358,6 +358,26 @@ class MainActivity : Activity() {
         showMajorKey(keys.first { it.second == "C" })
         panelView.addView(majorHolder, margins(bottom = 7))
         panelView.addView(label("A escala maior segue a fórmula tom – tom – semitom – tom – tom – tom – semitom. O mapa mostra as notas da tonalidade escolhida numa zona de cinco trastes; a tónica aparece a dourado.", muted, 13f), margins(bottom = 14))
+        panelView.addView(label("3 · ESCALA MENOR NATURAL · ESCOLHE A TONALIDADE", white, 16f, true), margins(top = 14, bottom = 6))
+        val minorSelected = label("LÁ MENOR · TÓNICA NA 6.ª CORDA", Color.rgb(255, 211, 126), 13f, true)
+        panelView.addView(minorSelected, margins(top = 5, bottom = 7))
+        val minorHolder = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        fun showMinorKey(key: Triple<String, String, Int>) {
+            minorSelected.text = "${key.first.uppercase()} MENOR NATURAL · TÓNICA NA 6.ª CORDA, TRASTE ${key.third}"
+            minorHolder.removeAllViews()
+            minorHolder.addView(majorScaleDiagram(key.second, key.third, true))
+        }
+        for (rowKeys in keys.chunked(6)) {
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            rowKeys.forEach { key ->
+                row.addView(button(key.first) { showMinorKey(key) },
+                    LinearLayout.LayoutParams(0, dp(40), 1f).apply { marginEnd = dp(3); bottomMargin = dp(4) })
+            }
+            panelView.addView(row)
+        }
+        showMinorKey(keys.first { it.second == "A" })
+        panelView.addView(minorHolder, margins(bottom = 7))
+        panelView.addView(label("A escala menor natural segue a fórmula tom – semitom – tom – tom – semitom – tom – tom. Compara este mapa com a pentatónica menor: a escala natural acrescenta duas notas e permite estudar melodias e harmonias menores.", muted, 13f), margins(bottom = 14))
         panelView.addView(label("COMO ESTUDAR", bright, 12f, true), margins(top = 4, bottom = 5))
         panelView.addView(label("• Escolhe uma tonalidade e toca lentamente, uma corda de cada vez.\n• Diz o nome de cada nota enquanto a tocas.\n• Sobe e desce sem perder a posição dos dedos.\n• Quando o desenho estiver seguro, cria pequenas frases musicais.\n• Compara duas tonalidades e observa como o padrão se desloca pelo braço.", white, 13f))
         panelView.addView(label("Dica: não tentes decorar todo o braço de uma só vez. Aprende uma zona, encontra as notas de referência e liga gradualmente as posições.", Color.rgb(255, 211, 126), 12f, true), margins(top = 12))
@@ -719,13 +739,13 @@ class MainActivity : Activity() {
         content.addView(panelView, margins(top = 18))
     }
 
-    private fun majorScaleDiagram(rootName: String = "C", rootFret: Int = 8): View {
+    private fun majorScaleDiagram(rootName: String = "C", rootFret: Int = 8, minor: Boolean = false): View {
         val pitchNames = arrayOf("Dó", "Dó♯", "Ré", "Ré♯", "Mi", "Fá", "Fá♯", "Sol", "Sol♯", "Lá", "Lá♯", "Si")
         val rootPitch = when (rootName) {
             "C" -> 0; "C♯" -> 1; "D" -> 2; "D♯" -> 3; "E" -> 4; "F" -> 5
             "F♯" -> 6; "G" -> 7; "G♯" -> 8; "A" -> 9; "A♯" -> 10; else -> 11
         }
-        val majorIntervals = intArrayOf(0, 2, 4, 5, 7, 9, 11)
+        val scaleIntervals = if (minor) intArrayOf(0, 2, 3, 5, 7, 8, 10) else intArrayOf(0, 2, 4, 5, 7, 9, 11)
         return object : View(this) {
             private val wood = Paint(Paint.ANTI_ALIAS_FLAG)
             private val fretPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -784,7 +804,7 @@ class MainActivity : Activity() {
                         val midi = openMidi[stringIndex] + fret
                         val pitch = midi % 12
                         val interval = (pitch - rootPitch + 12) % 12
-                        if (majorIntervals.contains(interval)) {
+                        if (scaleIntervals.contains(interval)) {
                             val x = left + (offset + 0.5f) * fretWidth
                             val y = top + stringIndex * stringGap
                             canvas.drawCircle(x, y, dp(9).toFloat(), if (interval == 0) rootPaint else notePaint)
@@ -801,7 +821,7 @@ class MainActivity : Activity() {
                 cornerRadius = dp(14).toFloat()
                 setStroke(dp(1), Color.rgb(181, 139, 75))
             }
-            contentDescription = "Braço de guitarra com escala maior de $rootName nos trastes $rootFret a ${rootFret + 4}; tónica dourada e restantes notas azuis"
+            contentDescription = "Braço de guitarra com escala ${if (minor) "menor natural" else "maior"} de $rootName nos trastes $rootFret a ${rootFret + 4}; tónica dourada e restantes notas azuis"
         }
     }
 
