@@ -277,34 +277,38 @@ class MainActivity : Activity() {
     private fun addScaleLibrary(content: LinearLayout) {
         val panelView = card(blue)
         panelView.addView(label("MAPAS VISUAIS DO BRAÇO", bright, 13f, true))
-        panelView.addView(label("As cordas estão representadas da mais grave (em cima) à mais aguda (em baixo). Os círculos azuis mostram notas da escala; os dourados assinalam a tónica ou nota de referência.", muted, 13f), margins(top = 6, bottom = 10))
-
-        panelView.addView(label("1 · PENTATÓNICA MENOR DE LÁ", white, 16f, true), margins(top = 4, bottom = 6))
-        panelView.addView(pentatonicDiagram(), margins(bottom = 7))
-        panelView.addView(label("Notas: Lá – Dó – Ré – Mi – Sol. Este desenho, entre os trastes 5 e 8, é uma das posições mais usadas no rock e no blues. A nota Lá é a tónica.", muted, 13f), margins(bottom = 14))
-
+        panelView.addView(label("As cordas estão representadas da mais grave (em cima) à mais aguda (em baixo). Os círculos dourados identificam a tónica; os azuis mostram as restantes notas.", muted, 13f), margins(top = 6, bottom = 10))
+        panelView.addView(label("1 · PENTATÓNICA MENOR · ESCOLHE A TONALIDADE", white, 16f, true), margins(top = 4, bottom = 6))
+        val keys = listOf(
+            Triple("Dó", "C", 8), Triple("Dó♯", "C♯", 9), Triple("Ré", "D", 10),
+            Triple("Mi♭", "D♯", 11), Triple("Mi", "E", 12), Triple("Fá", "F", 1),
+            Triple("Fá♯", "F♯", 2), Triple("Sol", "G", 3), Triple("Sol♯", "G♯", 4),
+            Triple("Lá", "A", 5), Triple("Si♭", "A♯", 6), Triple("Si", "B", 7)
+        )
+        val selectedKey = label("LÁ MENOR · TÓNICA NA 6.ª CORDA, TRASTE 5", Color.rgb(255, 211, 126), 13f, true)
+        panelView.addView(selectedKey, margins(top = 5, bottom = 7))
+        val diagramHolder = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        fun showKey(key: Triple<String, String, Int>) {
+            selectedKey.text = "${key.first.uppercase()} MENOR · TÓNICA NA 6.ª CORDA, ${if (key.third == 12) "TRASTE 12 (OU CORDA SOLTA)" else "TRASTE ${key.third}"}"
+            diagramHolder.removeAllViews()
+            diagramHolder.addView(pentatonicDiagram(key.second, key.third))
+        }
+        for (rowKeys in keys.chunked(6)) {
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            rowKeys.forEach { key ->
+                row.addView(button(key.first) { showKey(key) },
+                    LinearLayout.LayoutParams(0, dp(40), 1f).apply { marginEnd = dp(3); bottomMargin = dp(4) })
+            }
+            panelView.addView(row)
+        }
+        showKey(keys.first { it.second == "A" })
+        panelView.addView(diagramHolder, margins(bottom = 7))
+        panelView.addView(label("O padrão mantém a mesma forma em todas as tonalidades. A posição indicada começa na 6.ª corda; ao mudares de tonalidade, o desenho desloca-se para o traste correspondente.", muted, 13f), margins(bottom = 14))
         panelView.addView(label("2 · ESCALA MAIOR DE DÓ", white, 16f, true), margins(top = 4, bottom = 6))
         panelView.addView(majorScaleDiagram(), margins(bottom = 7))
         panelView.addView(label("Notas: Dó – Ré – Mi – Fá – Sol – Lá – Si. Repara que o mesmo nome de nota aparece em várias cordas: aprender estas referências ajuda a percorrer todo o braço.", muted, 13f), margins(bottom = 14))
-
-        panelView.addView(label("TRANSPOR A PENTATÓNICA PARA OUTRAS TONALIDADES", bright, 12f, true), margins(top = 4, bottom = 6))
-        panelView.addView(label("O desenho da pentatónica menor mantém a mesma forma quando o deslocas pelo braço. Encontra a tónica na 6.ª corda (Mi grave) e coloca aí o início do padrão:", muted, 13f), margins(bottom = 8))
-        val transpositionCard = card(Color.rgb(255, 190, 55))
-        transpositionCard.addView(label("TONALIDADE · TRASTE DA TÓNICA NA 6.ª CORDA", Color.rgb(255, 211, 126), 11f, true))
-        val transpositions = listOf(
-            "Mi♭ menor · traste 11", "Mi menor · corda solta / 12", "Fá menor · traste 1",
-            "Fá♯ menor · traste 2", "Sol menor · traste 3", "Sol♯ menor · traste 4",
-            "Lá menor · traste 5", "Si♭ menor · traste 6", "Si menor · traste 7",
-            "Dó menor · traste 8", "Dó♯ menor · traste 9", "Ré menor · traste 10"
-        )
-        transpositions.forEach { item ->
-            transpositionCard.addView(label("•  $item", white, 13f), margins(top = 3))
-        }
-        transpositionCard.addView(label("Exemplo: para tocar Dó menor, desloca o mesmo desenho três trastes acima da posição de Lá menor (traste 5 → traste 8).", Color.rgb(255, 211, 126), 12f, true), margins(top = 9))
-        panelView.addView(transpositionCard, margins(bottom = 14))
-
         panelView.addView(label("COMO ESTUDAR", bright, 12f, true), margins(top = 4, bottom = 5))
-        panelView.addView(label("• Toca lentamente, uma corda de cada vez.\n• Diz o nome de cada nota enquanto a tocas.\n• Sobe e desce sem perder a posição dos dedos.\n• Quando o desenho estiver seguro, cria pequenas frases musicais.\n• Transpõe o padrão para outra tonalidade, mantendo as mesmas distâncias entre trastes.", white, 13f))
+        panelView.addView(label("• Escolhe uma tonalidade e toca lentamente, uma corda de cada vez.\n• Diz o nome de cada nota enquanto a tocas.\n• Sobe e desce sem perder a posição dos dedos.\n• Quando o desenho estiver seguro, cria pequenas frases musicais.\n• Compara duas tonalidades e observa como o padrão se desloca pelo braço.", white, 13f))
         panelView.addView(label("Dica: não tentes decorar todo o braço de uma só vez. Aprende uma zona, encontra as notas de referência e liga gradualmente as posições.", Color.rgb(255, 211, 126), 12f, true), margins(top = 12))
         content.addView(panelView, margins(top = 18))
     }
@@ -776,13 +780,18 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun pentatonicDiagram(): View {
+    private fun pentatonicDiagram(rootName: String = "A", rootFret: Int = 5): View {
+        val pitchNames = arrayOf("Dó", "Dó♯", "Ré", "Ré♯", "Mi", "Fá", "Fá♯", "Sol", "Sol♯", "Lá", "Lá♯", "Si")
+        val rootPitch = when (rootName) {
+            "C" -> 0; "C♯" -> 1; "D" -> 2; "D♯" -> 3; "E" -> 4; "F" -> 5
+            "F♯" -> 6; "G" -> 7; "G♯" -> 8; "A" -> 9; "A♯" -> 10; else -> 11
+        }
         return object : View(this) {
             private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; strokeWidth = dp(2).toFloat() }
             private val rootPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 55); style = Paint.Style.FILL }
             private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bright; style = Paint.Style.FILL }
             private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(11).toFloat(); typeface = Typeface.DEFAULT_BOLD }
-            private val noteTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textSize = dp(9).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
+            private val noteTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textSize = dp(8).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
             override fun onDraw(canvas: Canvas) {
                 super.onDraw(canvas)
                 val left = dp(38).toFloat()
@@ -792,6 +801,7 @@ class MainActivity : Activity() {
                 val sx = (right - left) / 4f
                 val sy = (bottom - top) / 5f
                 val strings = arrayOf("E", "A", "D", "G", "B", "e")
+                val openMidi = intArrayOf(40, 45, 50, 55, 59, 64)
                 for (i in 0..5) {
                     val y = top + i * sy
                     canvas.drawLine(left, y, right, y, gridPaint)
@@ -800,34 +810,31 @@ class MainActivity : Activity() {
                 for (f in 0..4) {
                     val x = left + f * sx
                     canvas.drawLine(x, top, x, bottom, gridPaint)
-                    canvas.drawText((f + 5).toString(), x + sx / 2f - dp(4), top - dp(12).toFloat(), textPaint)
+                    canvas.drawText((rootFret + f).toString(), x + sx / 2f - dp(4), top - dp(12).toFloat(), textPaint)
                 }
-                val positions = arrayOf(
-                    intArrayOf(0, 5), intArrayOf(0, 8),
-                    intArrayOf(1, 5), intArrayOf(1, 7),
-                    intArrayOf(2, 5), intArrayOf(2, 7),
-                    intArrayOf(3, 5), intArrayOf(3, 7),
-                    intArrayOf(4, 5), intArrayOf(4, 8),
-                    intArrayOf(5, 5), intArrayOf(5, 8)
+                val offsets = arrayOf(
+                    intArrayOf(0, 0), intArrayOf(0, 3),
+                    intArrayOf(1, 0), intArrayOf(1, 2),
+                    intArrayOf(2, 0), intArrayOf(2, 2),
+                    intArrayOf(3, 0), intArrayOf(3, 2),
+                    intArrayOf(4, 0), intArrayOf(4, 3),
+                    intArrayOf(5, 0), intArrayOf(5, 3)
                 )
-                val noteNames = mapOf(
-                    "0:5" to "A", "0:8" to "C", "1:5" to "D", "1:7" to "E",
-                    "2:5" to "G", "2:7" to "A", "3:5" to "C", "3:7" to "D",
-                    "4:5" to "E", "4:8" to "G", "5:5" to "A", "5:8" to "C"
-                )
-                for (p in positions) {
-                    val x = left + (p[1] - 5 + 0.5f) * sx
+                for (p in offsets) {
+                    val fret = rootFret + p[1]
+                    val midi = openMidi[p[0]] + fret
+                    val isRoot = midi % 12 == rootPitch
+                    val x = left + (p[1] + 0.5f) * sx
                     val y = top + p[0] * sy
-                    val isRoot = (p[0] == 0 && p[1] == 5) || (p[0] == 2 && p[1] == 7) || (p[0] == 5 && p[1] == 5)
                     canvas.drawCircle(x, y, dp(8).toFloat(), if (isRoot) rootPaint else notePaint)
-                    canvas.drawText(noteNames["${p[0]}:${p[1]}"] ?: "", x, y + dp(3).toFloat(), noteTextPaint)
+                    canvas.drawText(pitchNames[midi % 12], x, y + dp(3).toFloat(), noteTextPaint)
                 }
-                canvas.drawText("Trastes 5–8 · corda grave em cima", left, height - dp(5).toFloat(), textPaint)
+                canvas.drawText("Trastes $rootFret–${rootFret + 3} · corda grave em cima", left, height - dp(5).toFloat(), textPaint)
             }
         }.apply {
             layoutParams = LinearLayout.LayoutParams(-1, dp(190))
             background = roundDrawable(Color.rgb(7, 35, 62), 12)
-            contentDescription = "Mapa da pentatónica menor de Lá entre os trastes cinco e oito"
+            contentDescription = "Mapa da pentatónica menor de $rootName com tónica no traste $rootFret"
         }
     }
 
