@@ -30,6 +30,7 @@ Escola-de-Guitarra/
 - Repertório sugerido por nível, sem distribuir tablaturas ou gravações protegidas.
 - Diagramas de acordes e progressões de rock, pop e blues, com posições dos dedos.
 - Técnica de guitarra, pentatónica menor de Lá e improvisação, com mapas visuais do braço e nomes das notas.
+- Biblioteca visual de escalas: pentatónica menor de Lá e escala maior de Dó, com orientação para memorizar notas, estudar posições e transportar padrões.
 - Teoria musical aplicada ao braço da guitarra.
 - Afinador cromático por microfone, com indicação de nota e desvio em cents.
 - Metrónomo ajustável entre 40 e 200 BPM, com compassos selecionáveis 3/4, 4/4 e 6/8 e acentuação do primeiro tempo.
@@ -48,9 +49,9 @@ Escola-de-Guitarra/
 
 ## Versão
 
-- Nome: 1.5.0
-- Código: 7
-- Alteração recente: o metrónomo permite escolher compassos 3/4, 4/4 e 6/8; a preferência fica guardada no dispositivo.
+- Nome: 1.5.1
+- Código: 8
+- Alteração recente: nova secção dedicada aos mapas visuais de escalas, com pentatónica menor de Lá e escala maior de Dó.
 
 ## Limites de validação
 
