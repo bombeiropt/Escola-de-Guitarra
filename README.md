@@ -30,7 +30,7 @@ Escola-de-Guitarra/
 - Repertório sugerido por nível, sem distribuir tablaturas ou gravações protegidas.
 - Diagramas de acordes e progressões de rock, pop e blues, com posições dos dedos.
 - Técnica de guitarra, pentatónica menor de Lá e improvisação, com mapas visuais do braço e nomes das notas.
-- Biblioteca visual interativa de escalas: pentatónica menor em 12 tonalidades e duas posições ligadas no braço, escala maior em 12 tonalidades, diagramas dinâmicos e exercícios progressivos para guitarra elétrica.
+- Biblioteca visual interativa de escalas: pentatónica menor em 12 tonalidades e três posições consecutivas ligadas no braço, escala maior em 12 tonalidades, diagramas dinâmicos e exercícios progressivos para guitarra elétrica.
 - Teoria musical aplicada ao braço da guitarra.
 - Afinador cromático por microfone, com indicação de nota e desvio em cents.
 - Metrónomo ajustável entre 40 e 200 BPM, com compassos selecionáveis 3/4, 4/4 e 6/8 e acentuação do primeiro tempo.
@@ -49,9 +49,9 @@ Escola-de-Guitarra/
 
 ## Versão
 
-- Nome: 1.5.5
-- Código: 12
-- Alteração recente: segunda posição da pentatónica menor, ligação entre posições e três exercícios práticos graduais para guitarra elétrica.
+- Nome: 1.5.6
+- Código: 13
+- Alteração recente: terceira posição da pentatónica menor, três caixas consecutivas no braço e exercícios práticos graduais para guitarra elétrica.
 
 ## Limites de validação
 
