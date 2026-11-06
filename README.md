@@ -32,7 +32,7 @@ Escola-de-Guitarra/
 - Técnica de guitarra, pentatónica menor de Lá e improvisação, com mapas visuais do braço e nomes das notas.
 - Teoria musical aplicada ao braço da guitarra.
 - Afinador cromático por microfone, com indicação de nota e desvio em cents.
-- Metrónomo ajustável entre 40 e 200 BPM.
+- Metrónomo ajustável entre 40 e 200 BPM, com compassos selecionáveis 3/4, 4/4 e 6/8 e acentuação do primeiro tempo.
 - Plano semanal de estudo e registo local de exercícios concluídos.
 - Preferência de andamento do metrónomo guardada no dispositivo.
 - Gestão do ciclo de vida dos recursos de áudio para evitar reprodução indevida em segundo plano.
@@ -48,9 +48,9 @@ Escola-de-Guitarra/
 
 ## Versão
 
-- Nome: 1.4.1
-- Código: 6
-- Alteração recente: os diagramas da pentatónica identificam agora cada nota e destacam a tónica Lá.
+- Nome: 1.5.0
+- Código: 7
+- Alteração recente: o metrónomo permite escolher compassos 3/4, 4/4 e 6/8; a preferência fica guardada no dispositivo.
 
 ## Limites de validação
 
