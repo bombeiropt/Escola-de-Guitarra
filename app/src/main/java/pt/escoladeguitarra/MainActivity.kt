@@ -254,7 +254,12 @@ class MainActivity : Activity() {
             Triple("SÁBADO · CRIATIVIDADE", "Improvisar sobre uma progressão simples durante 10 min; gravar uma ideia própria, se possível, e ouvi-la.", "Objetivo: criar frases curtas com pausas e variação rítmica."),
             Triple("DOMINGO · REVISÃO", "Rever o que foi estudado, repetir os exercícios mais difíceis e registar o andamento confortável.", "Objetivo: identificar uma melhoria e escolher uma prioridade para a semana seguinte.")
         )
+        val prefs = getSharedPreferences("guitar_progress", MODE_PRIVATE)
+        val completedDays = days.count { prefs.getBoolean("weekly_" + it.first.substringBefore(" ·"), false) }
+        val weeklyProgress = label("PROGRESSO DA SEMANA · $completedDays / 7 DIAS", Color.rgb(255, 211, 126), 12f, true)
+        plan.addView(weeklyProgress, margins(top = 8, bottom = 10))
         days.forEach { day ->
+            val dayKey = "weekly_" + day.first.substringBefore(" ·")
             val block = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 setPadding(dp(11), dp(10), dp(11), dp(10))
@@ -263,6 +268,12 @@ class MainActivity : Activity() {
             block.addView(label(day.first, bright, 12f, true))
             block.addView(label(day.second, white, 13f), margins(top = 4, bottom = 4))
             block.addView(label(day.third, muted, 12f))
+            val isDone = prefs.getBoolean(dayKey, false)
+            block.addView(button(if (isDone) "✓  Dia concluído" else "Marcar este dia como concluído") {
+                prefs.edit().putBoolean(dayKey, true).apply()
+                Toast.makeText(this, "Dia de treino registado.", Toast.LENGTH_SHORT).show()
+                showLesson("Treino e evolução")
+            }, matchHeight(42).apply { topMargin = dp(8) })
             plan.addView(block, margins(bottom = 8))
             if (day.first.startsWith("QUARTA")) {
                 plan.addView(label("MAPA DA ESCALA · LÁ MENOR", bright, 11f, true), margins(top = 2, bottom = 5))
