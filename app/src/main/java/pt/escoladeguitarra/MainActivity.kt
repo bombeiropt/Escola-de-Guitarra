@@ -708,7 +708,7 @@ class MainActivity : Activity() {
             private val rootPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 55) }
             private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(65, 190, 245) }
             private val markerText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.rgb(8, 19, 29); textSize = dp(7.5f).toFloat()
+                color = Color.rgb(8, 19, 29); textSize = dp(8).toFloat()
                 textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD
             }
             private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
