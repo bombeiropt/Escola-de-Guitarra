@@ -74,6 +74,7 @@ class MainActivity : Activity() {
         "Som e efeitos" to Lesson("Constrói o teu som", "Ajusta primeiro o volume e o ganho; adiciona efeitos gradualmente.", listOf("Começa com som limpo e equalização neutra.", "Aumenta o ganho aos poucos para controlar o ruído.", "Experimenta delay ou reverb com moderação."), "Toca a mesma frase com som limpo e depois com overdrive. Compara a clareza das notas."),
         "Treino e evolução" to Lesson("Treino com objetivo", "Uma sessão equilibrada alterna técnica, repertório e criatividade. A regularidade vale mais do que a velocidade.", listOf("Aquece durante cinco minutos com movimentos leves e palhetada lenta.", "Dedica dez minutos à técnica que estás a desenvolver.", "Estuda uma passagem de uma música em pequenos segmentos.", "Reserva cinco minutos para improvisar ou criar uma frase.", "Regista o andamento, as dificuldades e uma pequena vitória da sessão."), "Faz uma sessão de 20 minutos: 5 de aquecimento, 5 de técnica, 5 de repertório e 5 de improvisação. Regista o que correu melhor e escolhe um objetivo para a próxima sessão."),
         "Afinador e metrónomo" to Lesson("Afinação e pulso", "Afinar e praticar com um pulso estável são hábitos essenciais.", listOf("Afinação standard: E–A–D–G–B–E, da corda mais grave à mais aguda.", "Toca uma corda de cada vez e deixa a nota estabilizar.", "No metrónomo, começa devagar e mantém o tempo constante."), "Afina cada corda com o afinador por microfone. Depois, regula o metrónomo para 60 BPM e toca uma nota em cada clique durante um minuto."),
+        "Escalas e braço" to Lesson("Domina o braço da guitarra", "Aprende a localizar as notas e a ligar desenhos de escalas ao longo do braço. Começa por uma posição confortável e expande gradualmente.", listOf("Memoriza primeiro a pentatónica menor de Lá entre os trastes 5 e 8.", "Identifica as notas fundamentais Lá e Dó e usa-as como referências visuais.", "Compara o desenho da pentatónica com a escala maior de Dó.", "Toca cada desenho a subir e a descer, dizendo o nome das notas.", "Quando estiveres confortável, desloca o mesmo padrão para outra tonalidade."), "Com o metrónomo a 60 BPM, toca a pentatónica de Lá menor em duas oitavas. Depois escolhe três notas e cria uma frase curta que termine em Lá."),
         "Teoria musical" to Lesson("Compreende o que estás a tocar", "A teoria musical ajuda-te a encontrar notas, construir acordes e criar progressões com intenção.", listOf("Na guitarra, cada traste corresponde a um semitom; dois semitons formam um tom.", "A escala maior segue a sequência: tom – tom – semitom – tom – tom – tom – semitom.", "Uma tríade maior é formada por tónica, terça maior e quinta justa; uma menor usa terça menor.", "Os intervalos dão identidade às melodias e aos acordes. Aprende a ouvi-los e a encontrá-los no braço.", "Relaciona a teoria com músicas e progressões que já conheces."), "Na corda Mi grave, encontra Sol no traste 3, Lá no 5 e Si no 7. Toca as notas e identifica os intervalos. Depois constrói Dó maior com Dó–Mi–Sol e Lá menor com Lá–Dó–Mi."),
     )
 
@@ -124,6 +125,7 @@ class MainActivity : Activity() {
         content.addView(label("EXPLORAR A ESCOLA", Color.rgb(255, 211, 126), 12f, true), margins(bottom = 10))
         val descriptions = mapOf(
             "Aulas e aprendizagem" to Triple("♫", "Aulas passo a passo", "Do nível inicial ao avançado"),
+            "Escalas e braço" to Triple("♬", "Escalas no braço", "Mapas visuais e tonalidades"),
             "Teoria musical" to Triple("𝄞", "Notas, escalas e harmonia", "Aprende a compreender a música"),
             "Afinador e metrónomo" to Triple("♩", "Afinação e ritmo", "Afinador analógico e metrónomo"),
             "Acordes & dedilhados" to Triple("♬", "Acordes e dedilhados", "Diagramas e progressões"),
@@ -230,6 +232,7 @@ class MainActivity : Activity() {
         }, matchHeight(50))
         content.addView(exercise, margins(top = 18))
         if (section == "Afinador e metrónomo") { addTuner(content); addMetronome(content) }
+        if (section == "Escalas e braço") addScaleLibrary(content)
         if (section == "Teoria musical") addMusicTheory(content)
         if (section == "Treino e evolução") addWeeklyPlan(content)
         if (section == "Acordes & dedilhados") addChordExamples(content)
@@ -269,6 +272,25 @@ class MainActivity : Activity() {
         plan.addView(label("REGRA DE PROGRESSÃO", bright, 12f, true), margins(top = 6, bottom = 4))
         plan.addView(label("Quando conseguires executar um exercício corretamente em três repetições consecutivas, aumenta apenas 3 a 5 BPM. Se perderes a limpeza ou sentires tensão, reduz o andamento. A qualidade vem antes da velocidade.", white, 13f))
         content.addView(plan, margins(top = 18))
+    }
+
+    private fun addScaleLibrary(content: LinearLayout) {
+        val panelView = card(blue)
+        panelView.addView(label("MAPAS VISUAIS DO BRAÇO", bright, 13f, true))
+        panelView.addView(label("As cordas estão representadas da mais grave (em cima) à mais aguda (em baixo). Os círculos azuis mostram notas da escala; os dourados assinalam a tónica ou nota de referência.", muted, 13f), margins(top = 6, bottom = 10))
+
+        panelView.addView(label("1 · PENTATÓNICA MENOR DE LÁ", white, 16f, true), margins(top = 4, bottom = 6))
+        panelView.addView(pentatonicDiagram(), margins(bottom = 7))
+        panelView.addView(label("Notas: Lá – Dó – Ré – Mi – Sol. Este desenho, entre os trastes 5 e 8, é uma das posições mais usadas no rock e no blues. A nota Lá é a tónica.", muted, 13f), margins(bottom = 14))
+
+        panelView.addView(label("2 · ESCALA MAIOR DE DÓ", white, 16f, true), margins(top = 4, bottom = 6))
+        panelView.addView(majorScaleDiagram(), margins(bottom = 7))
+        panelView.addView(label("Notas: Dó – Ré – Mi – Fá – Sol – Lá – Si. Repara que o mesmo nome de nota aparece em várias cordas: aprender estas referências ajuda a percorrer todo o braço.", muted, 13f), margins(bottom = 14))
+
+        panelView.addView(label("COMO ESTUDAR", bright, 12f, true), margins(top = 4, bottom = 5))
+        panelView.addView(label("• Toca lentamente, uma corda de cada vez.\n• Diz o nome de cada nota enquanto a tocas.\n• Sobe e desce sem perder a posição dos dedos.\n• Quando o desenho estiver seguro, cria pequenas frases musicais.\n• Transpõe o padrão para outra tonalidade, mantendo as mesmas distâncias entre trastes.", white, 13f))
+        panelView.addView(label("Dica: não tentes decorar todo o braço de uma só vez. Aprende uma zona, encontra as notas de referência e liga gradualmente as posições.", Color.rgb(255, 211, 126), 12f, true), margins(top = 12))
+        content.addView(panelView, margins(top = 18))
     }
 
     private fun addMusicTheory(content: LinearLayout) {
