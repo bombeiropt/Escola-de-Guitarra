@@ -49,7 +49,7 @@ Escola-de-Guitarra/
 
 ## Versão
 
-- Nome: 1.5.1
+- Nome: 1.5.2
 - Código: 8
 - Alteração recente: nova secção dedicada aos mapas visuais de escalas, com pentatónica menor de Lá e escala maior de Dó.
 
