@@ -483,7 +483,17 @@ class MainActivity : Activity() {
             }.apply { priority = Thread.MAX_PRIORITY }
             tunerThread = worker
             worker.start()
-        } catch (_: Exception) { tunerRunning = false; tunerStatus?.setStatus("Não foi possível iniciar o afinador") }
+        } catch (_: Exception) {
+            tunerRunning = false
+            val failedRecorder = tunerRecord
+            tunerRecord = null
+            try {
+                if (failedRecorder?.recordingState == AudioRecord.RECORDSTATE_RECORDING) failedRecorder.stop()
+            } catch (_: Exception) { }
+            try { failedRecorder?.release() } catch (_: Exception) { }
+            tunerThread = null
+            tunerStatus?.setStatus("Não foi possível iniciar o afinador. Verifica a permissão e o microfone.")
+        }
     }
 
     /** Mostrador analógico com escala de cents, zona verde e ponteiro em tempo real. */
