@@ -49,9 +49,9 @@ Escola-de-Guitarra/
 
 ## Versão
 
-- Nome: 1.5.8
-- Código: 14
-- Alteração recente: cinco posições completas da pentatónica menor, com diagramas de braço alargados e exercícios práticos graduais para guitarra elétrica.
+- Nome: 1.6.0
+- Código: 17
+- Alteração recente: reforço da gestão de erros do microfone no afinador, evitando ciclos de leitura ocupados e libertando o gravador quando o arranque falha.
 
 ## Limites de validação
 
@@ -68,3 +68,8 @@ Uma compilação bem-sucedida confirma que o projeto compila no ambiente de CI; 
 ### Versão 1.5.9
 - Corrigida a identificação visual das posições IV e V da pentatónica menor.
 - Texto de referência tonal clarificado ao mudar de posição.
+
+
+### Versão 1.6.0
+- Afinador: tratamento explícito de erros e leituras vazias do microfone.
+- Libertação do recurso AudioRecord quando o arranque não consegue concluir.
