@@ -49,9 +49,9 @@ Escola-de-Guitarra/
 
 ## Versão
 
-- Nome: 1.6.1
-- Código: 18
-- Alteração recente: novos padrões visuais de ritmo para guitarra, com setas de palhetada, contagem e exercícios de acompanhamento.
+- Nome: 1.6.2
+- Código: 19
+- Estado: documentação alinhada com a versão definida no Gradle; biblioteca visual de escalas e metrónomo com compassos 3/4, 4/4 e 6/8.
 
 ## Limites de validação
 
@@ -77,3 +77,9 @@ Uma compilação bem-sucedida confirma que o projeto compila no ambiente de CI; 
 ### Versão 1.6.1
 - Biblioteca de ritmos com três padrões visuais: rock direto, pop contínuo e balada com pausas.
 - Contagem dos tempos e subdivisões, com indicação dos movimentos para baixo/cima e explicação prática.
+
+
+### Versão 1.6.2
+- Atualização da versão da aplicação para 1.6.2 (código 19).
+- Metrónomo com acentuação adaptada ao compasso 6/8.
+- Mantida a biblioteca de escalas com diagramas do braço, notas identificadas e tónica destacada.
