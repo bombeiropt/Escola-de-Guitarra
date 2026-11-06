@@ -295,7 +295,7 @@ class MainActivity : Activity() {
             currentPentatonicPosition = position
             val fretDescription = if (key.third == 12) "TRASTE 12 (OU CORDA SOLTA)" else "TRASTE ${key.third}"
             val positionName = listOf("I", "II", "III", "IV", "V").getOrElse(position - 1) { "V" }
-            selectedKey.text = "${key.first.uppercase()} MENOR · POSIÇÃO $positionName · TÓNICA NA 6.ª CORDA, $fretDescription"
+            selectedKey.text = "${key.first.uppercase()} MENOR · POSIÇÃO $positionName · REFERÊNCIA NA 6.ª CORDA: $fretDescription"
             diagramHolder.removeAllViews()
             diagramHolder.addView(pentatonicDiagram(key.second, key.third, position))
         }
@@ -892,7 +892,7 @@ class MainActivity : Activity() {
                         canvas.drawText(pitchNames[midi % 12], x, y + dp(3).toFloat(), noteTextPaint)
                     }
                 }
-                val positionName = listOf("I", "II", "III").getOrElse(position - 1) { "III" }
+                val positionName = listOf("I", "II", "III", "IV", "V").getOrElse(position - 1) { "V" }
                 canvas.drawText("POSIÇÃO " + positionName + " · TRASTES " + diagramStartFret + "–" + (diagramStartFret + 5), left, height - dp(5).toFloat(), textPaint)
             }
         }.apply {
