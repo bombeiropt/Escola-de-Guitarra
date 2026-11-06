@@ -757,6 +757,39 @@ class MainActivity : Activity() {
             block.addView(label(item.third, muted, 12f))
             panelView.addView(block, margins(bottom = 8))
         }
+        panelView.addView(label("PADRÕES DE RITMO · 4/4", bright, 13f, true), margins(top = 18, bottom = 6))
+        panelView.addView(label("As setas mostram o movimento da palheta: ↓ para baixo e ↑ para cima. O traço indica que não atacas as cordas, mas manténs o movimento da mão.", muted, 12f), margins(bottom = 8))
+        fun rhythmPattern(title: String, counts: List<String>, strokes: List<String>, explanation: String) {
+            val rhythmCard = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(11), dp(9), dp(11), dp(9))
+                background = roundDrawable(Color.rgb(7, 35, 62), 10)
+            }
+            rhythmCard.addView(label(title, white, 14f, true))
+            val rhythmRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            counts.indices.forEach { index ->
+                val cell = LinearLayout(this).apply {
+                    orientation = LinearLayout.VERTICAL
+                    gravity = Gravity.CENTER
+                    setPadding(dp(2), dp(5), dp(2), dp(5))
+                    background = roundDrawable(Color.rgb(14, 55, 86), 7)
+                }
+                cell.addView(label(counts[index], muted, 10f, true).apply { gravity = Gravity.CENTER })
+                cell.addView(label(strokes[index], Color.rgb(255, 190, 75), 21f, true).apply { gravity = Gravity.CENTER })
+                rhythmRow.addView(cell, LinearLayout.LayoutParams(0, dp(54), 1f).apply {
+                    if (index < counts.lastIndex) marginEnd = dp(3)
+                })
+            }
+            rhythmCard.addView(rhythmRow, margins(top = 6, bottom = 6))
+            rhythmCard.addView(label(explanation, muted, 12f))
+            panelView.addView(rhythmCard, margins(bottom = 7))
+        }
+        rhythmPattern("1 · ROCK DIRETO", listOf("1", "2", "3", "4"), listOf("↓", "↓", "↓", "↓"),
+            "Uma batida para baixo em cada tempo. Começa a 60 BPM e mantém a força igual.")
+        rhythmPattern("2 · POP CONTÍNUO", listOf("1", "&", "2", "&", "3", "&", "4", "&"), listOf("↓", "↑", "↓", "↑", "↓", "↑", "↓", "↑"),
+            "Alterna baixo e cima em colcheias. O movimento da mão deve continuar regular.")
+        rhythmPattern("3 · BALADA COM PAUSAS", listOf("1", "&", "2", "&", "3", "&", "4", "&"), listOf("↓", "—", "↓", "↑", "—", "↑", "↓", "↑"),
+            "Respeita os espaços sem parar o movimento da mão. Toca suavemente e evita acentuar todas as batidas.")
         panelView.addView(label("Desafio: começa a 60 BPM. Quando conseguires mudar de acorde sem parar e sem cordas abafadas, aumenta 5 BPM.", muted, 12f), margins(top = 3))
         content.addView(panelView, margins(top = 18))
     }
