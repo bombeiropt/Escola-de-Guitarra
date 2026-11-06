@@ -448,8 +448,20 @@ class MainActivity : Activity() {
             val worker = Thread {
                 val samples = ShortArray(4096)
                 while (tunerRunning && tunerRecord === recorder) {
-                    val count = try { recorder.read(samples, 0, samples.size) } catch (_: Exception) { -1 }
-                    if (count > 1024 && tunerRunning) {
+                    val count = try { recorder.read(samples, 0, samples.size) } catch (_: Exception) { AudioRecord.ERROR_INVALID_OPERATION }
+                    if (count < 0) {
+                        // Um erro de leitura não deve deixar a thread num ciclo ocupado.
+                        runOnUiThread {
+                            if (tunerRecord === recorder) {
+                                stopTuner()
+                                tunerStatus?.setStatus("A leitura do microfone foi interrompida. Volta a iniciar.")
+                            }
+                        }
+                        break
+                    }
+                    if (count == 0) {
+                        try { Thread.sleep(8) } catch (_: InterruptedException) { Thread.currentThread().interrupt(); break }
+                    } else if (count > 1024 && tunerRunning) {
                         val hz = detectPitch(samples, count, rate)
                         runOnUiThread {
                             if (tunerRunning && tunerRecord === recorder && hz > 0.0) {
