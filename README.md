@@ -49,9 +49,9 @@ Escola-de-Guitarra/
 
 ## Versão
 
-- Nome: 1.6.0
-- Código: 17
-- Alteração recente: reforço da gestão de erros do microfone no afinador, evitando ciclos de leitura ocupados e libertando o gravador quando o arranque falha.
+- Nome: 1.6.1
+- Código: 18
+- Alteração recente: novos padrões visuais de ritmo para guitarra, com setas de palhetada, contagem e exercícios de acompanhamento.
 
 ## Limites de validação
 
@@ -73,3 +73,7 @@ Uma compilação bem-sucedida confirma que o projeto compila no ambiente de CI; 
 ### Versão 1.6.0
 - Afinador: tratamento explícito de erros e leituras vazias do microfone.
 - Libertação do recurso AudioRecord quando o arranque não consegue concluir.
+
+### Versão 1.6.1
+- Biblioteca de ritmos com três padrões visuais: rock direto, pop contínuo e balada com pausas.
+- Contagem dos tempos e subdivisões, com indicação dos movimentos para baixo/cima e explicação prática.
