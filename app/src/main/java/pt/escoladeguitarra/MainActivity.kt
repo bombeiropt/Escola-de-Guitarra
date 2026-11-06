@@ -304,9 +304,26 @@ class MainActivity : Activity() {
         showKey(keys.first { it.second == "A" })
         panelView.addView(diagramHolder, margins(bottom = 7))
         panelView.addView(label("O padrão mantém a mesma forma em todas as tonalidades. A posição indicada começa na 6.ª corda; ao mudares de tonalidade, o desenho desloca-se para o traste correspondente.", muted, 13f), margins(bottom = 14))
-        panelView.addView(label("2 · ESCALA MAIOR DE DÓ", white, 16f, true), margins(top = 4, bottom = 6))
-        panelView.addView(majorScaleDiagram(), margins(bottom = 7))
-        panelView.addView(label("Notas: Dó – Ré – Mi – Fá – Sol – Lá – Si. Repara que o mesmo nome de nota aparece em várias cordas: aprender estas referências ajuda a percorrer todo o braço.", muted, 13f), margins(bottom = 14))
+        panelView.addView(label("2 · ESCALA MAIOR · ESCOLHE A TONALIDADE", white, 16f, true), margins(top = 4, bottom = 6))
+        val majorSelected = label("DÓ MAIOR · TÓNICA NA 6.ª CORDA", Color.rgb(255, 211, 126), 13f, true)
+        panelView.addView(majorSelected, margins(top = 5, bottom = 7))
+        val majorHolder = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        fun showMajorKey(key: Triple<String, String, Int>) {
+            majorSelected.text = "${key.first.uppercase()} MAIOR · TÓNICA NA 6.ª CORDA, TRASTE ${key.third}"
+            majorHolder.removeAllViews()
+            majorHolder.addView(majorScaleDiagram(key.second, key.third))
+        }
+        for (rowKeys in keys.chunked(6)) {
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            rowKeys.forEach { key ->
+                row.addView(button(key.first) { showMajorKey(key) },
+                    LinearLayout.LayoutParams(0, dp(40), 1f).apply { marginEnd = dp(3); bottomMargin = dp(4) })
+            }
+            panelView.addView(row)
+        }
+        showMajorKey(keys.first { it.second == "C" })
+        panelView.addView(majorHolder, margins(bottom = 7))
+        panelView.addView(label("A escala maior segue a fórmula tom – tom – semitom – tom – tom – tom – semitom. O mapa mostra as notas da tonalidade escolhida numa zona de cinco trastes; a tónica aparece a dourado.", muted, 13f), margins(bottom = 14))
         panelView.addView(label("COMO ESTUDAR", bright, 12f, true), margins(top = 4, bottom = 5))
         panelView.addView(label("• Escolhe uma tonalidade e toca lentamente, uma corda de cada vez.\n• Diz o nome de cada nota enquanto a tocas.\n• Sobe e desce sem perder a posição dos dedos.\n• Quando o desenho estiver seguro, cria pequenas frases musicais.\n• Compara duas tonalidades e observa como o padrão se desloca pelo braço.", white, 13f))
         panelView.addView(label("Dica: não tentes decorar todo o braço de uma só vez. Aprende uma zona, encontra as notas de referência e liga gradualmente as posições.", Color.rgb(255, 211, 126), 12f, true), margins(top = 12))
@@ -668,7 +685,13 @@ class MainActivity : Activity() {
         content.addView(panelView, margins(top = 18))
     }
 
-    private fun majorScaleDiagram(): View {
+    private fun majorScaleDiagram(rootName: String = "C", rootFret: Int = 8): View {
+        val pitchNames = arrayOf("Dó", "Dó♯", "Ré", "Ré♯", "Mi", "Fá", "Fá♯", "Sol", "Sol♯", "Lá", "Lá♯", "Si")
+        val rootPitch = when (rootName) {
+            "C" -> 0; "C♯" -> 1; "D" -> 2; "D♯" -> 3; "E" -> 4; "F" -> 5
+            "F♯" -> 6; "G" -> 7; "G♯" -> 8; "A" -> 9; "A♯" -> 10; else -> 11
+        }
+        val majorIntervals = intArrayOf(0, 2, 4, 5, 7, 9, 11)
         return object : View(this) {
             private val wood = Paint(Paint.ANTI_ALIAS_FLAG)
             private val fretPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -677,58 +700,25 @@ class MainActivity : Activity() {
                     null, Shader.TileMode.CLAMP)
                 strokeWidth = dp(3).toFloat()
             }
-            private val stringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.rgb(220, 222, 218)
-                strokeWidth = dp(1).toFloat()
-            }
-            private val thinStringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.rgb(150, 165, 174)
-                strokeWidth = dp(1).toFloat()
-            }
+            private val stringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(220, 222, 218); strokeWidth = dp(1).toFloat() }
+            private val thinStringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(150, 165, 174); strokeWidth = dp(1).toFloat() }
             private val edgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.rgb(196, 151, 82)
-                style = Paint.Style.STROKE
-                strokeWidth = dp(2).toFloat()
+                color = Color.rgb(196, 151, 82); style = Paint.Style.STROKE; strokeWidth = dp(2).toFloat()
             }
-            private val rootPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.rgb(255, 190, 55)
-                style = Paint.Style.FILL
-            }
-            private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.rgb(65, 190, 245)
-                style = Paint.Style.FILL
-            }
+            private val rootPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 55) }
+            private val notePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(65, 190, 245) }
             private val markerText = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.rgb(8, 19, 29)
-                textSize = dp(10).toFloat()
-                textAlign = Paint.Align.CENTER
-                typeface = Typeface.DEFAULT_BOLD
+                color = Color.rgb(8, 19, 29); textSize = dp(7.5f).toFloat()
+                textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD
             }
             private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.WHITE
-                textSize = dp(10).toFloat()
-                typeface = Typeface.DEFAULT_BOLD
+                color = Color.WHITE; textSize = dp(10).toFloat(); typeface = Typeface.DEFAULT_BOLD
             }
             private val smallPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.rgb(203, 213, 222)
-                textSize = dp(9).toFloat()
+                color = Color.rgb(203, 213, 222); textSize = dp(9).toFloat()
             }
-            private val notes = arrayOf(
-                intArrayOf(0,3), intArrayOf(0,5), intArrayOf(0,7), intArrayOf(0,8),
-                intArrayOf(1,3), intArrayOf(1,5), intArrayOf(1,7),
-                intArrayOf(2,3), intArrayOf(2,5), intArrayOf(2,7),
-                intArrayOf(3,4), intArrayOf(3,5), intArrayOf(3,7),
-                intArrayOf(4,3), intArrayOf(4,5), intArrayOf(4,6), intArrayOf(4,8),
-                intArrayOf(5,3), intArrayOf(5,5), intArrayOf(5,7), intArrayOf(5,8)
-            )
-            private val names = mapOf(
-                "0:3" to "G", "0:5" to "A", "0:7" to "B", "0:8" to "C",
-                "1:3" to "C", "1:5" to "D", "1:7" to "E",
-                "2:3" to "F", "2:5" to "G", "2:7" to "A",
-                "3:4" to "B", "3:5" to "C", "3:7" to "D",
-                "4:3" to "D", "4:5" to "E", "4:6" to "F", "4:8" to "G",
-                "5:3" to "G", "5:5" to "A", "5:7" to "B", "5:8" to "C"
-            )
+            private val openMidi = intArrayOf(40, 45, 50, 55, 59, 64)
+            private val stringNames = arrayOf("E", "A", "D", "G", "B", "e")
             override fun onDraw(canvas: Canvas) {
                 super.onDraw(canvas)
                 val left = dp(34).toFloat()
@@ -743,31 +733,32 @@ class MainActivity : Activity() {
                     null, Shader.TileMode.CLAMP)
                 canvas.drawRoundRect(board, dp(10).toFloat(), dp(10).toFloat(), wood)
                 canvas.drawRoundRect(board, dp(10).toFloat(), dp(10).toFloat(), edgePaint)
-
-                // Pequenas marcas de posição do braço, como num instrumento real.
-                for (fret in listOf(5, 7)) {
-                    val x = left + (fret - 3.5f) * fretWidth
-                    canvas.drawCircle(x, (top + bottom) / 2f, dp(3).toFloat(), Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(220, 197, 158) })
-                }
                 for (i in 0..5) {
                     val y = top + i * stringGap
                     canvas.drawLine(left, y, right, y, if (i < 3) stringPaint else thinStringPaint)
-                    canvas.drawText(arrayOf("E", "A", "D", "G", "B", "e")[i], dp(8).toFloat(), y + dp(4).toFloat(), labelPaint)
+                    canvas.drawText(stringNames[i], dp(8).toFloat(), y + dp(4).toFloat(), labelPaint)
                 }
-                for (fret in 3..8) {
-                    val x = left + (fret - 3) * fretWidth
+                for (offset in 0..5) {
+                    val x = left + offset * fretWidth
                     canvas.drawLine(x, top - dp(7), x, bottom + dp(7), fretPaint)
-                    canvas.drawText(fret.toString(), x + fretWidth / 2f, top - dp(17).toFloat(), labelPaint)
+                    if (offset < 5) canvas.drawText((rootFret + offset).toString(),
+                        x + fretWidth / 2f, top - dp(17).toFloat(), labelPaint)
                 }
-                notes.forEach { p ->
-                    val x = left + (p[1] - 3) * fretWidth + fretWidth / 2f
-                    val y = top + p[0] * stringGap
-                    val name = names["${p[0]}:${p[1]}"] ?: ""
-                    val isRoot = name == "C"
-                    canvas.drawCircle(x, y, dp(10).toFloat(), if (isRoot) rootPaint else notePaint)
-                    canvas.drawText(name, x, y + dp(4).toFloat(), markerText)
+                for (stringIndex in 0..5) {
+                    for (offset in 0..4) {
+                        val fret = rootFret + offset
+                        val midi = openMidi[stringIndex] + fret
+                        val pitch = midi % 12
+                        val interval = (pitch - rootPitch + 12) % 12
+                        if (majorIntervals.contains(interval)) {
+                            val x = left + (offset + 0.5f) * fretWidth
+                            val y = top + stringIndex * stringGap
+                            canvas.drawCircle(x, y, dp(9).toFloat(), if (interval == 0) rootPaint else notePaint)
+                            canvas.drawText(pitchNames[pitch], x, y + dp(3).toFloat(), markerText)
+                        }
+                    }
                 }
-                canvas.drawText("TRASTES 3–8  ·  AFINAÇÃO STANDARD", left, height - dp(7).toFloat(), smallPaint)
+                canvas.drawText("TRASTES $rootFret–${rootFret + 4}  ·  AFINAÇÃO STANDARD", left, height - dp(7).toFloat(), smallPaint)
             }
         }.apply {
             layoutParams = LinearLayout.LayoutParams(-1, dp(218))
@@ -776,7 +767,7 @@ class MainActivity : Activity() {
                 cornerRadius = dp(14).toFloat()
                 setStroke(dp(1), Color.rgb(181, 139, 75))
             }
-            contentDescription = "Braço de guitarra com acabamento de madeira, escala de Dó maior nos trastes 3 a 8; notas Dó a dourado e restantes notas a azul"
+            contentDescription = "Braço de guitarra com escala maior de $rootName nos trastes $rootFret a ${rootFret + 4}; tónica dourada e restantes notas azuis"
         }
     }
 
