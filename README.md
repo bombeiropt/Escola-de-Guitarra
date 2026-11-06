@@ -49,10 +49,12 @@ Escola-de-Guitarra/
 
 ## Versão
 
-- Nome: 1.5.2
+- Nome: 1.5.3
 - Código: 8
 - Alteração recente: nova secção dedicada aos mapas visuais de escalas, com pentatónica menor de Lá e escala maior de Dó.
 
 ## Limites de validação
 
 Uma compilação bem-sucedida confirma que o projeto compila no ambiente de CI; não substitui testes em dispositivos Android reais. O APK debug destina-se a testes e não é uma versão release assinada para distribuição comercial.
+
+- Seletor interativo de tonalidade para a pentatónica menor, com notas e trastes atualizados no diagrama.
