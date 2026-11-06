@@ -53,10 +53,14 @@ class MainActivity : Activity() {
         override fun run() {
             if (!metronomeRunning) return
             try {
-                toneGenerator?.startTone(if (metronomeBeat == 0) ToneGenerator.TONE_PROP_ACK else ToneGenerator.TONE_PROP_BEEP, 70)
+                // Em 6/8, o BPM representa a pulsação pontuada: seis subdivisões
+                // correspondem a duas pulsações principais, acentuadas em 1 e 4.
+                val isMainAccent = metronomeBeat == 0 || (beatsPerBar == 6 && metronomeBeat == 3)
+                toneGenerator?.startTone(if (isMainAccent) ToneGenerator.TONE_PROP_ACK else ToneGenerator.TONE_PROP_BEEP, 70)
             } catch (_: Exception) { }
             metronomeBeat = (metronomeBeat + 1) % beatsPerBar
-            metronomeHandler.postDelayed(this, (60000L / metronomeBpm))
+            val interval = if (beatsPerBar == 6) 60000L / (metronomeBpm * 3L) else 60000L / metronomeBpm
+            metronomeHandler.postDelayed(this, interval)
         }
     }
 
@@ -489,7 +493,7 @@ class MainActivity : Activity() {
         panelView.addView(label("METRÓNOMO INTERATIVO", bright, 13f, true))
         val bpmLabel = label("$metronomeBpm BPM", white, 26f, true).apply { gravity = Gravity.CENTER }
         panelView.addView(bpmLabel, margins(top = 8, bottom = 4))
-        panelView.addView(label("Ajusta o andamento entre 40 e 200 BPM.", muted, 13f))
+        panelView.addView(label("Ajusta entre 40 e 200 BPM. Em 6/8, o BPM corresponde à pulsação pontuada e ouves seis subdivisões por compasso.", muted, 13f))
         panelView.addView(label("COMPASSO", bright, 11f, true), margins(top = 12, bottom = 5))
         val meterRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         listOf(3 to "3/4", 4 to "4/4", 6 to "6/8").forEach { (beats, meter) ->
@@ -501,7 +505,7 @@ class MainActivity : Activity() {
             }, LinearLayout.LayoutParams(0, dp(44), 1f).apply { marginEnd = dp(5) })
         }
         panelView.addView(meterRow, margins(bottom = 8))
-        panelView.addView(label("O primeiro tempo de cada compasso recebe um clique mais forte.", muted, 12f))
+        panelView.addView(label(if (beatsPerBar == 6) "No 6/8, os tempos 1 e 4 são acentuados (dois grupos de três)." else "O primeiro tempo de cada compasso recebe um clique mais forte.", muted, 12f))
         val slider = SeekBar(this).apply {
             max = 160
             progress = metronomeBpm - 40
@@ -533,7 +537,7 @@ class MainActivity : Activity() {
             }
             showLesson("Afinador e metrónomo")
         }, matchHeight(50))
-        panelView.addView(label("Compasso selecionado: $beatsPerBar pulsações. O andamento e o compasso ficam guardados neste dispositivo.", muted, 12f), margins(top = 8))
+        panelView.addView(label(if (beatsPerBar == 6) "6/8: seis subdivisões em dois tempos principais. Andamento e compasso guardados neste dispositivo." else "Compasso selecionado: $beatsPerBar tempos por compasso. O andamento e o compasso ficam guardados neste dispositivo.", muted, 12f), margins(top = 8))
         content.addView(panelView, margins(top = 18))
     }
 
