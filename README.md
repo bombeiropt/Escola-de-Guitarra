@@ -49,7 +49,7 @@ Escola-de-Guitarra/
 
 ## Versão
 
-- Nome: 1.5.7
+- Nome: 1.5.8
 - Código: 14
 - Alteração recente: cinco posições completas da pentatónica menor, com diagramas de braço alargados e exercícios práticos graduais para guitarra elétrica.
 
@@ -58,3 +58,8 @@ Escola-de-Guitarra/
 Uma compilação bem-sucedida confirma que o projeto compila no ambiente de CI; não substitui testes em dispositivos Android reais. O APK debug destina-se a testes e não é uma versão release assinada para distribuição comercial.
 
 - Seletor interativo de tonalidade para a pentatónica menor, com notas e trastes atualizados no diagrama.
+
+
+### Versão 1.5.8
+- Biblioteca visual com escalas maior, menor natural e pentatónica menor em tonalidades selecionáveis.
+- Diagramas do braço com tónica destacada e notas identificadas.
