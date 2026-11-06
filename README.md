@@ -63,3 +63,8 @@ Uma compilação bem-sucedida confirma que o projeto compila no ambiente de CI; 
 ### Versão 1.5.8
 - Biblioteca visual com escalas maior, menor natural e pentatónica menor em tonalidades selecionáveis.
 - Diagramas do braço com tónica destacada e notas identificadas.
+
+
+### Versão 1.5.9
+- Corrigida a identificação visual das posições IV e V da pentatónica menor.
+- Texto de referência tonal clarificado ao mudar de posição.
