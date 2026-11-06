@@ -287,6 +287,22 @@ class MainActivity : Activity() {
         panelView.addView(majorScaleDiagram(), margins(bottom = 7))
         panelView.addView(label("Notas: Dó – Ré – Mi – Fá – Sol – Lá – Si. Repara que o mesmo nome de nota aparece em várias cordas: aprender estas referências ajuda a percorrer todo o braço.", muted, 13f), margins(bottom = 14))
 
+        panelView.addView(label("TRANSPOR A PENTATÓNICA PARA OUTRAS TONALIDADES", bright, 12f, true), margins(top = 4, bottom = 6))
+        panelView.addView(label("O desenho da pentatónica menor mantém a mesma forma quando o deslocas pelo braço. Encontra a tónica na 6.ª corda (Mi grave) e coloca aí o início do padrão:", muted, 13f), margins(bottom = 8))
+        val transpositionCard = card(Color.rgb(255, 190, 55))
+        transpositionCard.addView(label("TONALIDADE · TRASTE DA TÓNICA NA 6.ª CORDA", Color.rgb(255, 211, 126), 11f, true))
+        val transpositions = listOf(
+            "Mi♭ menor · traste 11", "Mi menor · corda solta / 12", "Fá menor · traste 1",
+            "Fá♯ menor · traste 2", "Sol menor · traste 3", "Sol♯ menor · traste 4",
+            "Lá menor · traste 5", "Si♭ menor · traste 6", "Si menor · traste 7",
+            "Dó menor · traste 8", "Dó♯ menor · traste 9", "Ré menor · traste 10"
+        )
+        transpositions.forEach { item ->
+            transpositionCard.addView(label("•  $item", white, 13f), margins(top = 3))
+        }
+        transpositionCard.addView(label("Exemplo: para tocar Dó menor, desloca o mesmo desenho três trastes acima da posição de Lá menor (traste 5 → traste 8).", Color.rgb(255, 211, 126), 12f, true), margins(top = 9))
+        panelView.addView(transpositionCard, margins(bottom = 14))
+
         panelView.addView(label("COMO ESTUDAR", bright, 12f, true), margins(top = 4, bottom = 5))
         panelView.addView(label("• Toca lentamente, uma corda de cada vez.\n• Diz o nome de cada nota enquanto a tocas.\n• Sobe e desce sem perder a posição dos dedos.\n• Quando o desenho estiver seguro, cria pequenas frases musicais.\n• Transpõe o padrão para outra tonalidade, mantendo as mesmas distâncias entre trastes.", white, 13f))
         panelView.addView(label("Dica: não tentes decorar todo o braço de uma só vez. Aprende uma zona, encontra as notas de referência e liga gradualmente as posições.", Color.rgb(255, 211, 126), 12f, true), margins(top = 12))
