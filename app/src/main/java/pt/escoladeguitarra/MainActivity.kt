@@ -294,17 +294,18 @@ class MainActivity : Activity() {
             currentPentatonicKey = key
             currentPentatonicPosition = position
             val fretDescription = if (key.third == 12) "TRASTE 12 (OU CORDA SOLTA)" else "TRASTE ${key.third}"
-            selectedKey.text = "${key.first.uppercase()} MENOR · POSIÇÃO ${if (position == 1) "I" else "II"} · TÓNICA NA 6.ª CORDA, $fretDescription"
+            val positionName = listOf("I", "II", "III", "IV", "V").getOrElse(position - 1) { "V" }
+            selectedKey.text = "${key.first.uppercase()} MENOR · POSIÇÃO $positionName · TÓNICA NA 6.ª CORDA, $fretDescription"
             diagramHolder.removeAllViews()
             diagramHolder.addView(pentatonicDiagram(key.second, key.third, position))
         }
         val positionRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        for (position in 1..3) {
-            val positionName = listOf("I", "II", "III")[position - 1]
-            positionRow.addView(button("POSIÇÃO " + positionName) {
+        for (position in 1..5) {
+            val positionName = listOf("I", "II", "III", "IV", "V")[position - 1]
+            positionRow.addView(button(positionName) {
                 showKey(currentPentatonicKey, position)
             }, LinearLayout.LayoutParams(0, dp(40), 1f).apply {
-                if (position < 3) marginEnd = dp(4)
+                if (position < 5) marginEnd = dp(3)
             })
         }
         panelView.addView(positionRow, margins(bottom = 7))
@@ -318,11 +319,11 @@ class MainActivity : Activity() {
         }
         showKey(keys.first { it.second == "A" })
         panelView.addView(diagramHolder, margins(bottom = 7))
-        panelView.addView(label("O padrão mantém a mesma forma em todas as tonalidades. As três posições mostram caixas consecutivas da pentatónica menor e permitem começar a percorrer o braço. Os círculos dourados marcam as tónicas.", muted, 13f), margins(bottom = 14))
+        panelView.addView(label("O padrão mantém a mesma forma em todas as tonalidades. As cinco posições mostram o sistema completo de caixas consecutivas da pentatónica menor ao longo do braço. Os círculos dourados marcam as tónicas.", muted, 13f), margins(bottom = 14))
         panelView.addView(label("EXERCÍCIOS PRÁTICOS · GUITARRA ELÉTRICA", bright, 13f, true), margins(top = 3, bottom = 7))
         val drills = listOf(
             Triple("1 · Subida e descida", "50–60 BPM · semicolcheias", "Toca as notas da posição escolhida em sequência ascendente e descendente. Usa palhetada alternada e mantém todas as notas com o mesmo volume."),
-            Triple("2 · Ligação entre posições", "50 BPM · colcheias", "Toca a posição I, continua para a posição II sem parar e regressa pelo mesmo caminho. Faz a mudança de posição com o polegar relaxado e sem apertar o braço."),
+            Triple("2 · Ligação entre posições", "50 BPM · colcheias", "Liga as cinco posições sem parar, começando devagar e mantendo a pulsação. Regressa pelo mesmo caminho. Faz a mudança de posição com o polegar relaxado e sem apertar o braço."),
             Triple("3 · Frases e bends", "60 BPM · 4 compassos", "Cria uma frase curta de três ou quatro notas. Termina numa tónica; experimenta um bend de um tom ou um vibrato controlado apenas nas notas adequadas.")
         )
         drills.forEach { drill ->
@@ -806,7 +807,7 @@ class MainActivity : Activity() {
 
     private fun pentatonicDiagram(rootName: String = "A", rootFret: Int = 5, position: Int = 1): View {
         val pitchNames = arrayOf("Dó", "Dó♯", "Ré", "Ré♯", "Mi", "Fá", "Fá♯", "Sol", "Sol♯", "Lá", "Lá♯", "Si")
-        val startOffset = when (position) { 1 -> 0; 2 -> 2; else -> 4 }
+        val startOffset = when (position) { 1 -> 0; 2 -> 2; 3 -> 4; 4 -> 7; else -> 9 }
         val pattern = when (position) {
             1 -> arrayOf(
                 intArrayOf(0, 3), intArrayOf(0, 2), intArrayOf(0, 2),
@@ -816,9 +817,17 @@ class MainActivity : Activity() {
                 intArrayOf(1, 3), intArrayOf(0, 3), intArrayOf(0, 3),
                 intArrayOf(0, 2), intArrayOf(1, 3), intArrayOf(1, 3)
             )
-            else -> arrayOf(
+            3 -> arrayOf(
                 intArrayOf(1, 3), intArrayOf(1, 3), intArrayOf(1, 3),
                 intArrayOf(0, 3), intArrayOf(1, 4), intArrayOf(1, 3)
+            )
+            4 -> arrayOf(
+                intArrayOf(0, 3), intArrayOf(0, 3), intArrayOf(0, 2),
+                intArrayOf(0, 2), intArrayOf(1, 3), intArrayOf(0, 3)
+            )
+            else -> arrayOf(
+                intArrayOf(1, 3), intArrayOf(1, 3), intArrayOf(0, 3),
+                intArrayOf(0, 3), intArrayOf(1, 3), intArrayOf(1, 3)
             )
         }
         val diagramStartFret = rootFret + startOffset
@@ -864,7 +873,7 @@ class MainActivity : Activity() {
                     }
                 }
                 val positionName = listOf("I", "II", "III").getOrElse(position - 1) { "III" }
-                canvas.drawText("POSIÇÃO " + positionName + " · TRASTES " + diagramStartFret + "–" + (diagramStartFret + 4), left, height - dp(5).toFloat(), textPaint)
+                canvas.drawText("POSIÇÃO " + positionName + " · TRASTES " + diagramStartFret + "–" + (diagramStartFret + 5), left, height - dp(5).toFloat(), textPaint)
             }
         }.apply {
             layoutParams = LinearLayout.LayoutParams(-1, dp(190))
