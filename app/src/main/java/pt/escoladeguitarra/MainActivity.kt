@@ -838,7 +838,7 @@ class MainActivity : Activity() {
                 val right = width - dp(16).toFloat()
                 val top = dp(42).toFloat()
                 val bottom = height - dp(22).toFloat()
-                val sx = (right - left) / 4f
+                val sx = (right - left) / 5f
                 val sy = (bottom - top) / 5f
                 val strings = arrayOf("E", "A", "D", "G", "B", "e")
                 val openMidi = intArrayOf(40, 45, 50, 55, 59, 64)
@@ -847,7 +847,7 @@ class MainActivity : Activity() {
                     canvas.drawLine(left, y, right, y, gridPaint)
                     canvas.drawText(strings[i], dp(12).toFloat(), y + dp(4).toFloat(), textPaint)
                 }
-                for (f in 0..4) {
+                for (f in 0..5) {
                     val x = left + f * sx
                     canvas.drawLine(x, top, x, bottom, gridPaint)
                     canvas.drawText((diagramStartFret + f).toString(), x + sx / 2f - dp(4), top - dp(12).toFloat(), textPaint)
@@ -864,7 +864,7 @@ class MainActivity : Activity() {
                     }
                 }
                 val positionName = listOf("I", "II", "III").getOrElse(position - 1) { "III" }
-                canvas.drawText("POSIÇÃO " + positionName + " · TRASTES " + diagramStartFret + "–" + (diagramStartFret + 3), left, height - dp(5).toFloat(), textPaint)
+                canvas.drawText("POSIÇÃO " + positionName + " · TRASTES " + diagramStartFret + "–" + (diagramStartFret + 4), left, height - dp(5).toFloat(), textPaint)
             }
         }.apply {
             layoutParams = LinearLayout.LayoutParams(-1, dp(190))
