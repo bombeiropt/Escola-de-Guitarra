@@ -43,6 +43,7 @@ class MainActivity : Activity() {
     private var metronomeRunning = false
     private var metronomeBpm = 80
     private var metronomeBeat = 0
+    private var beatsPerBar = 4
     @Volatile private var tunerRunning = false
     private var tunerRecord: AudioRecord? = null
     private var tunerThread: Thread? = null
@@ -54,7 +55,7 @@ class MainActivity : Activity() {
             try {
                 toneGenerator?.startTone(if (metronomeBeat == 0) ToneGenerator.TONE_PROP_ACK else ToneGenerator.TONE_PROP_BEEP, 70)
             } catch (_: Exception) { }
-            metronomeBeat = (metronomeBeat + 1) % 4
+            metronomeBeat = (metronomeBeat + 1) % beatsPerBar
             metronomeHandler.postDelayed(this, (60000L / metronomeBpm))
         }
     }
@@ -79,6 +80,7 @@ class MainActivity : Activity() {
         root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(bg) }
         setContentView(root)
         metronomeBpm = getSharedPreferences("guitar_progress", MODE_PRIVATE).getInt("metronome_bpm", 80).coerceIn(40, 200)
+        beatsPerBar = getSharedPreferences("guitar_progress", MODE_PRIVATE).getInt("metronome_beats_per_bar", 4).let { if (it in listOf(3, 4, 6)) it else 4 }
         showHome()
     }
 
@@ -488,6 +490,18 @@ class MainActivity : Activity() {
         val bpmLabel = label("$metronomeBpm BPM", white, 26f, true).apply { gravity = Gravity.CENTER }
         panelView.addView(bpmLabel, margins(top = 8, bottom = 4))
         panelView.addView(label("Ajusta o andamento entre 40 e 200 BPM.", muted, 13f))
+        panelView.addView(label("COMPASSO", bright, 11f, true), margins(top = 12, bottom = 5))
+        val meterRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        listOf(3 to "3/4", 4 to "4/4", 6 to "6/8").forEach { (beats, meter) ->
+            meterRow.addView(button(if (beatsPerBar == beats) "✓  $meter" else meter) {
+                beatsPerBar = beats
+                metronomeBeat = 0
+                getSharedPreferences("guitar_progress", MODE_PRIVATE).edit().putInt("metronome_beats_per_bar", beats).apply()
+                showLesson("Afinador e metrónomo")
+            }, LinearLayout.LayoutParams(0, dp(44), 1f).apply { marginEnd = dp(5) })
+        }
+        panelView.addView(meterRow, margins(bottom = 8))
+        panelView.addView(label("O primeiro tempo de cada compasso recebe um clique mais forte.", muted, 12f))
         val slider = SeekBar(this).apply {
             max = 160
             progress = metronomeBpm - 40
@@ -519,7 +533,7 @@ class MainActivity : Activity() {
             }
             showLesson("Afinador e metrónomo")
         }, matchHeight(50))
-        panelView.addView(label("O primeiro tempo de cada compasso tem um clique diferente.", muted, 12f), margins(top = 8))
+        panelView.addView(label("Compasso selecionado: $beatsPerBar pulsações. O andamento e o compasso ficam guardados neste dispositivo.", muted, 12f), margins(top = 8))
         content.addView(panelView, margins(top = 18))
     }
 
