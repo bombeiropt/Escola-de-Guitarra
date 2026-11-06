@@ -594,6 +594,10 @@ class MainActivity : Activity() {
         panelView.addView(chordDiagram("D7", intArrayOf(-1, -1, 0, 2, 1, 2), intArrayOf(0, 0, 0, 2, 1, 3)), margins(bottom = 12))
         panelView.addView(label("G7  ·  SOL DE SÉTIMA", white, 15f, true), margins(top = 4))
         panelView.addView(chordDiagram("G7", intArrayOf(3, 2, 0, 0, 0, 1), intArrayOf(3, 2, 0, 0, 0, 1)), margins(bottom = 12))
+        panelView.addView(label("F  ·  FÁ MAIOR (PESTANA)", white, 15f, true), margins(top = 4))
+        panelView.addView(chordDiagram("F", intArrayOf(1, 3, 3, 2, 1, 1), intArrayOf(1, 3, 4, 2, 1, 1)), margins(bottom = 12))
+        panelView.addView(label("Bm  ·  SI MENOR (PESTANA)", white, 15f, true), margins(top = 4))
+        panelView.addView(chordDiagram("Bm", intArrayOf(-1, 2, 4, 4, 3, 2), intArrayOf(0, 1, 3, 4, 2, 1)), margins(bottom = 12))
         panelView.addView(label("E5  ·  POWER CHORD", white, 15f, true), margins(top = 4))
         panelView.addView(chordDiagram("E5", intArrayOf(0, 2, 2, -1, -1, -1), intArrayOf(0, 1, 2, 0, 0, 0)), margins(bottom = 8))
         panelView.addView(label("X significa corda abafada; 0 significa corda solta. Coloca os dedos perto do traste, sem tocar nas cordas vizinhas. Toca cada corda separadamente para confirmar que o acorde soa limpo.", muted, 12f), margins(top = 4))
@@ -793,6 +797,12 @@ class MainActivity : Activity() {
             private val nutPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(238, 224, 190); strokeWidth = dp(5).toFloat() }
             private val stringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(211, 220, 226); style = Paint.Style.STROKE }
             private val markerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(255, 190, 75); style = Paint.Style.FILL }
+            private val barrePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.rgb(255, 190, 75)
+                style = Paint.Style.STROKE
+                strokeWidth = dp(13).toFloat()
+                strokeCap = Paint.Cap.ROUND
+            }
             private val markerText = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(35, 25, 18); textSize = dp(11).toFloat(); textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD }
             private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = white; textSize = dp(12).toFloat(); typeface = Typeface.DEFAULT_BOLD }
             private val smallPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(229, 190, 125); textSize = dp(10).toFloat(); typeface = Typeface.DEFAULT_BOLD }
@@ -824,6 +834,20 @@ class MainActivity : Activity() {
                     val y = top + i * stepY
                     canvas.drawLine(left, y, right, y, if (i == 0) nutPaint else fretPaint)
                     if (i < 4) canvas.drawText((i + 1).toString(), dp(8).toFloat(), y + stepY / 2f + dp(4), smallPaint)
+                }
+
+                // Pestanas: une as posições do mesmo dedo no mesmo traste.
+                for (finger in 1..4) {
+                    val barreStrings = (0..5).filter { fingers[it] == finger && frets[it] > 0 }
+                    if (barreStrings.size >= 2) {
+                        val barreFrets = barreStrings.map { frets[it] }.distinct()
+                        if (barreFrets.size == 1) {
+                            val y = top + (barreFrets.first() - 0.5f) * stepY
+                            val x1 = left + barreStrings.first() * stepX
+                            val x2 = left + barreStrings.last() * stepX
+                            canvas.drawLine(x1, y, x2, y, barrePaint)
+                        }
+                    }
                 }
 
                 // Marcadores de cordas soltas, abafadas e dedos.
